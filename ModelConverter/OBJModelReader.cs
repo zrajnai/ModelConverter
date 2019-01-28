@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 
 namespace ModelConverter
 {
@@ -12,143 +14,132 @@ namespace ModelConverter
 
         public Model Read(Stream input)
         {
+            if (input == null)
+                throw new ArgumentNullException(nameof(input));
+
             _model = new Model();
             var tr = new StreamReader(input);
 
             _currentLineNumber = 0;
             while (!tr.EndOfStream)
             {
-                _currentLine = tr.ReadLine();
-                if (_currentLine == null)
+                if (!TryParseLine(tr))
                     break;
-
-                _currentLineNumber++;
-                if (string.IsNullOrEmpty(_currentLine))
-                    continue;
-
-                if (IsComment())
-                    continue;
-
-                if (IsVertexDefinition())
-                    ReadVertex();
-
-                else if (IsFaceDefinition())
-                    ReadFace();
-
-                else if (IsVertexNormalDefinition())
-                    ReadVertexNormal();
-
-                else if (IsTextureCoordDefinition())
-                    ReadTextureCoord();
             }
 
             return _model;
         }
 
+        private bool TryParseLine(TextReader tr)
+        {
+            _currentLine = tr.ReadLine();
+            if (_currentLine == null)
+                return false;
+
+            _currentLineNumber++;
+            if (_currentLine.Length == 0)
+                return true;
+
+            if (IsComment())
+                return true;
+
+            if (IsVertexDefinition())
+                ReadVertex();
+
+            else if (IsFaceDefinition())
+                ReadFace();
+
+            else if (IsVertexNormalDefinition())
+                ReadVertexNormal();
+
+            else if (IsTextureCoordDefinition())
+                ReadTextureCoord();
+
+            return true;
+        }
+
         private bool IsComment() => _currentLine.StartsWith("#");
 
-        private bool IsVertexDefinition() => _currentLine.StartsWith("v");
+        private bool IsVertexDefinition() => _currentLine.StartsWith("v ");
 
         private void ReadVertex()
         {
-            var parts = _currentLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = SplitLine();
             if (parts.Length < 4 || parts.Length > 5)
-                throw new InvalidModelFormatException($"Wrong vertex format in line : {_currentLineNumber}");
+                ThrowInvalidModelFormatException("Wrong vertex format");
 
-            if (!double.TryParse(parts[1], out var x))
+            if (!TryStrictDoubleParse(parts[1], out var x))
                 ThrowParseException("vertex X");
-            if (!double.TryParse(parts[2], out var y))
+            if (!TryStrictDoubleParse(parts[2], out var y))
                 ThrowParseException("vertex Y");
-            if (!double.TryParse(parts[3], out var z))
+            if (!TryStrictDoubleParse(parts[3], out var z))
                 ThrowParseException("vertex Z");
             var w = 1.0;
-            if (parts.Length > 2 && !double.TryParse(parts[3], out w))
+            if (parts.Length > 4 && !TryStrictDoubleParse(parts[4], out w))
                 ThrowParseException("vertex W");
 
-            _model.AddVertex(new Vertex {X = x, Y = y, Z = z, W = w});
+            _model.AddVertex(new Vertex { X = x, Y = y, Z = z, W = w });
         }
 
-        private bool IsVertexNormalDefinition() => _currentLine.StartsWith("vn");
+        private bool IsVertexNormalDefinition() => _currentLine.StartsWith("vn ");
 
         private void ReadVertexNormal()
         {
-            var parts = _currentLine.Split(new []{' '}, StringSplitOptions.RemoveEmptyEntries );
+            var parts = SplitLine();
             if (parts.Length != 4)
-                throw new InvalidModelFormatException($"Wrong vertex normal format in line : {_currentLineNumber}");
+                ThrowInvalidModelFormatException("Wrong vertex normal format");
 
-            if (!double.TryParse(parts[1], out var x))
+            if (!TryStrictDoubleParse(parts[1], out var x))
                 ThrowParseException("vertex normal X");
-            if (!double.TryParse(parts[2], out var y))
+            if (!TryStrictDoubleParse(parts[2], out var y))
                 ThrowParseException("vertex normal Y");
-            if (!double.TryParse(parts[3], out var z))
+            if (!TryStrictDoubleParse(parts[3], out var z))
                 ThrowParseException("vertex normal Z");
 
             _model.AddVertexNormal(new VertexNormal { X = x, Y = y, Z = z });
         }
 
-        private bool IsTextureCoordDefinition() => _currentLine.StartsWith("vt");
+        private bool IsTextureCoordDefinition() => _currentLine.StartsWith("vt ");
 
         private void ReadTextureCoord()
         {
-            var parts = _currentLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = SplitLine();
             if (parts.Length < 2 || parts.Length > 4)
-                throw new InvalidModelFormatException($"Wrong texture coordinate format in line : {_currentLineNumber}");
+                ThrowInvalidModelFormatException("Wrong texture coordinate format");
 
-            if (!double.TryParse(parts[1], out var u))
+            if (!TryStrictDoubleParse(parts[1], out var u))
                 ThrowParseException("texture coord U");
 
             double v = 0;
-            if (parts.Length > 2 && !double.TryParse(parts[2], out v))
+            if (parts.Length > 2 && !TryStrictDoubleParse(parts[2], out v))
                 ThrowParseException("texture coord V");
 
             double w = 0;
-            if (parts.Length > 3 && !double.TryParse(parts[3], out w))
+            if (parts.Length > 3 && !TryStrictDoubleParse(parts[3], out w))
                 ThrowParseException("texture coord W");
 
-            _model.AddTextureCoord(new TextureCoord {U = u, V = v, W = w});
+            _model.AddTextureCoord(new TextureCoord { U = u, V = v, W = w });
         }
 
         private bool IsFaceDefinition() => _currentLine.StartsWith("f");
 
         private void ReadFace()
         {
-            var parts = _currentLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = SplitLine();
             if (parts.Length < 4)
-                throw new InvalidModelFormatException($"Too few parameters for face in line : {_currentLineNumber}");
+                ThrowInvalidModelFormatException("Too few parameters for face");
 
             var vertexIndices = new List<int>();
             var textureCoordIndices = new List<int>();
             var normalIndices = new List<int>();
-            foreach (var part in parts)
+            foreach (var part in parts.Skip(1))
             {
-                var indices = part.Split(' ');
-                if (indices.Length < 1)
-                    throw new InvalidModelFormatException($"Too few parameters for face in line : {_currentLineNumber}");
-
-                if (!int.TryParse(indices[0], out var vertexIndex))
-                    ThrowParseException("face vertex index");
-                vertexIndices.Add(vertexIndex);
-
-                var textureCoordIndex = -1;
-                if (indices.Length > 1 && !int.TryParse(indices[1], out textureCoordIndex))
-                    ThrowParseException("face texture index");
-                if (textureCoordIndex >= 0)
-                    textureCoordIndices.Add(textureCoordIndex);
-
-                var normalIndex = -1;
-                if (indices.Length > 2 && !int.TryParse(indices[2], out normalIndex))
-                    ThrowParseException("face normal index");
-                if (normalIndex > 0)
-                    normalIndices.Add(normalIndex);
+                ParseFaceIndexBundle(part, vertexIndices, textureCoordIndices, normalIndices);
             }
 
-            if (textureCoordIndices.Count > 0 && textureCoordIndices.Count != vertexIndices.Count)
-                throw new InvalidModelFormatException($"Inconsistent face definition: not all vertices have texture coords in line: {_currentLineNumber}");
+            ValidateTextureCoordIndices(textureCoordIndices, vertexIndices);
 
-            if (normalIndices.Count > 0 && normalIndices.Count != vertexIndices.Count)
-                throw new InvalidModelFormatException($"Inconsistent face definition: not all vertices have normal coords in line: {_currentLineNumber}");
-
-
+            ValidateNormalIndices(normalIndices, vertexIndices);
 
             _model.AddFace(new Face
             {
@@ -158,9 +149,78 @@ namespace ModelConverter
             });
         }
 
+        private void ParseFaceIndexBundle(string part, ICollection<int> vertexIndices, List<int> textureCoordIndices, List<int> normalIndices)
+        {
+            var indices = part.Split('/');
+            if (indices.Length < 1)
+                ThrowInvalidModelFormatException("Too few parameters for face");
+
+            ParseVertexIndex(indices, vertexIndices);
+
+            ParseTextureCoordIndex(indices, textureCoordIndices);
+
+            ParseNormalIndex(indices, normalIndices);
+        }
+
+        private void ValidateNormalIndices(IReadOnlyCollection<int> normalIndices, IReadOnlyCollection<int> vertexIndices)
+        {
+            if (normalIndices.Count > 0 && normalIndices.Count != vertexIndices.Count)
+                ThrowInvalidModelFormatException("Inconsistent face definition: not all vertices have normal coords");
+        }
+
+        private void ValidateTextureCoordIndices(IReadOnlyCollection<int> textureCoordIndices, IReadOnlyCollection<int> vertexIndices)
+        {
+            if (textureCoordIndices.Count > 0 && textureCoordIndices.Count != vertexIndices.Count)
+                ThrowInvalidModelFormatException("Inconsistent face definition: not all vertices have texture coords");
+        }
+
+        private void ParseVertexIndex(IReadOnlyList<string> indices, ICollection<int> vertexIndices)
+        {
+            if (!int.TryParse(indices[0], out var vertexIndex))
+                ThrowParseException("face vertex index");
+            if (vertexIndex > _model.Vertices.Count())
+                ThrowInvalidModelFormatException("Illegal vertex reference");
+
+            vertexIndices.Add(vertexIndex);
+        }
+
+        private void ParseNormalIndex(IReadOnlyList<string> indices, ICollection<int> normalIndices)
+        {
+            var normalIndex = -1;
+            if (indices.Count > 2 && !int.TryParse(indices[2], out normalIndex))
+                ThrowParseException("face normal index");
+            if (normalIndex > 0)
+                normalIndices.Add(normalIndex);
+        }
+
+        private void ParseTextureCoordIndex(IReadOnlyList<string> indices, ICollection<int> textureCoordIndices)
+        {
+            var textureCoordIndex = -1;
+            if (indices.Count > 1 && !int.TryParse(indices[1], out textureCoordIndex))
+                ThrowParseException("face texture index");
+            if (textureCoordIndex >= 0)
+                textureCoordIndices.Add(textureCoordIndex);
+        }
+
+        private string[] SplitLine()
+        {
+            return _currentLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        private static bool TryStrictDoubleParse(string input, out double output)
+        {
+            return double.TryParse(input, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out output);
+        }
         private void ThrowParseException(string component)
         {
-            throw new InvalidModelFormatException($"Can't parse {component} in line ({_currentLineNumber}):" + Environment.NewLine + _currentLine);
+            throw new InvalidModelFormatException($"Can't parse {component} {CurrentLineMessage()}");
         }
+
+        private void ThrowInvalidModelFormatException(string message)
+        {
+            throw new InvalidModelFormatException(message + Environment.NewLine + CurrentLineMessage());
+        }
+
+        private string CurrentLineMessage() => $"({_currentLineNumber}): " + _currentLine;
     }
 }
