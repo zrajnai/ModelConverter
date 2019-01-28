@@ -4,10 +4,10 @@ namespace ModelConverter
 {
     public class Model
     {
-        public IEnumerable<Vertex> Vertices => _vertices;
-        public IEnumerable<VertexNormal> VertexNormals => _vertexNormals;
-        public IEnumerable<TextureCoord> TextureCoords => _textureCoords;
-        public IEnumerable<Face> Faces => _faces;
+        public IReadOnlyList<Vertex> Vertices => _vertices;
+        public IReadOnlyList<VertexNormal> VertexNormals => _vertexNormals;
+        public IReadOnlyList<TextureCoord> TextureCoords => _textureCoords;
+        public IReadOnlyList<Face> Faces => _faces;
 
         private readonly List<Vertex> _vertices = new List<Vertex>();
         private readonly List<VertexNormal> _vertexNormals = new List<VertexNormal>();
@@ -18,6 +18,32 @@ namespace ModelConverter
         public void AddVertex(Vertex v) => _vertices.Add(v);
         public void AddVertexNormal(VertexNormal v) => _vertexNormals.Add(v);
         public void AddTextureCoord(TextureCoord t) => _textureCoords.Add(t);
-        public void AddFace(Face f) => _faces.Add(f);
+        public void AddFace(Face f)
+        {
+            if (f.VertexIndices.Length == 3)
+            {
+                _faces.Add(f);
+            }
+            else if (f.VertexIndices.Length == 4)
+            {
+                _faces.Add(GetFaceFromQuad(f, 0, 1, 2));
+                _faces.Add(GetFaceFromQuad(f, 0, 2, 3));
+            }
+        }
+
+        private static Face GetFaceFromQuad(Face f, int i0, int i1, int i2)
+        {
+            return new Face
+            {
+                Normal = f.Normal,
+                VertexIndices = new[] { f.VertexIndices[i0], f.VertexIndices[i1], f.VertexIndices[i2] },
+                NormalIndices = f.NormalIndices.Length > 0
+                    ? new[] { f.NormalIndices[i0], f.NormalIndices[i1], f.NormalIndices[i2] }
+                    : new int[0],
+                TextureCoordIndices = f.TextureCoordIndices.Length > 0
+                    ? new[] { f.TextureCoordIndices[i0], f.TextureCoordIndices[i1], f.TextureCoordIndices[i2] }
+                    : new int[0],
+            };
+        }
     }
 }

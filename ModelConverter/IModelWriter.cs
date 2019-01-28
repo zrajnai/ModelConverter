@@ -4,6 +4,6 @@ namespace ModelConverter
 {
     public interface IModelWriter
     {
-        void Write(Stream output, Model model);
+        void Write(Model model);
     }
 }

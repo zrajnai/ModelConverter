@@ -6,19 +6,22 @@ using System.Linq;
 
 namespace ModelConverter
 {
-    internal class OBJModelReader : IModelReader
+    public class OBJModelReader : IModelReader
     {
+        private readonly Stream _input;
         private int _currentLineNumber;
         private string _currentLine;
         private Model _model;
 
-        public Model Read(Stream input)
+        public OBJModelReader(Stream input)
         {
-            if (input == null)
-                throw new ArgumentNullException(nameof(input));
+            _input = input ?? throw new ArgumentNullException(nameof(input));
+        }
 
+        public Model Read()
+        {
             _model = new Model();
-            var tr = new StreamReader(input);
+            var tr = new StreamReader(_input);
 
             _currentLineNumber = 0;
             while (!tr.EndOfStream)
@@ -121,17 +124,19 @@ namespace ModelConverter
             _model.AddTextureCoord(new TextureCoord { U = u, V = v, W = w });
         }
 
-        private bool IsFaceDefinition() => _currentLine.StartsWith("f");
+        private bool IsFaceDefinition() => _currentLine.StartsWith("f ");
 
         private void ReadFace()
         {
             var parts = SplitLine();
             if (parts.Length < 4)
                 ThrowInvalidModelFormatException("Too few parameters for face");
+            //if (parts.Length > 4)
+            //    ThrowInvalidModelFormatException("Sorry, only triangular faces are supported");
 
-            var vertexIndices = new List<int>();
-            var textureCoordIndices = new List<int>();
-            var normalIndices = new List<int>();
+            var vertexIndices = new List<int>(3);
+            var textureCoordIndices = new List<int>(3);
+            var normalIndices = new List<int>(3);
             foreach (var part in parts.Skip(1))
             {
                 ParseFaceIndexBundle(part, vertexIndices, textureCoordIndices, normalIndices);
@@ -141,12 +146,30 @@ namespace ModelConverter
 
             ValidateNormalIndices(normalIndices, vertexIndices);
 
+            var normalVector = CalculateNormal(vertexIndices);
+
             _model.AddFace(new Face
             {
                 VertexIndices = vertexIndices.ToArray(),
                 NormalIndices = normalIndices.ToArray(),
-                TextureCoordIndices = textureCoordIndices.ToArray()
+                TextureCoordIndices = textureCoordIndices.ToArray(),
+                Normal = normalVector
             });
+        }
+
+        private Vector CalculateNormal(IList<int> vertexIndices)
+        {
+            var v1 = _model.Vertices[vertexIndices[0]];
+            var v2 = _model.Vertices[vertexIndices[1]];
+            var v3 = _model.Vertices[vertexIndices[2]];
+
+            var v31 = (Vector)v3 - (Vector)v1;
+            var v21 = (Vector)v2 - (Vector)v1;
+
+            var n = (v31 % v21).Normalize();
+
+            return new Vector(n.X, n.Y, n.Z);
+
         }
 
         private void ParseFaceIndexBundle(string part, ICollection<int> vertexIndices, List<int> textureCoordIndices, List<int> normalIndices)
@@ -162,6 +185,34 @@ namespace ModelConverter
             ParseNormalIndex(indices, normalIndices);
         }
 
+        private void ParseVertexIndex(IReadOnlyList<string> indices, ICollection<int> vertexIndices)
+        {
+            if (!int.TryParse(indices[0], out var vertexIndex))
+                ThrowParseException("face vertex index");
+            if (vertexIndex > _model.Vertices.Count)
+                ThrowInvalidModelFormatException("Illegal vertex reference");
+
+            vertexIndices.Add(vertexIndex - 1);
+        }
+
+        private void ParseNormalIndex(IReadOnlyList<string> indices, ICollection<int> normalIndices)
+        {
+            var normalIndex = -1;
+            if (indices.Count > 2 && indices[2].Length > 0 && !int.TryParse(indices[2], out normalIndex))
+                ThrowParseException("face normal index");
+            if (normalIndex > 0)
+                normalIndices.Add(normalIndex - 1);
+        }
+
+        private void ParseTextureCoordIndex(IReadOnlyList<string> indices, ICollection<int> textureCoordIndices)
+        {
+            var textureCoordIndex = -1;
+            if (indices.Count > 1 && indices[1].Length > 0 && !int.TryParse(indices[1], out textureCoordIndex))
+                ThrowParseException("face texture index");
+            if (textureCoordIndex >= 0)
+                textureCoordIndices.Add(textureCoordIndex - 1);
+        }
+
         private void ValidateNormalIndices(IReadOnlyCollection<int> normalIndices, IReadOnlyCollection<int> vertexIndices)
         {
             if (normalIndices.Count > 0 && normalIndices.Count != vertexIndices.Count)
@@ -174,34 +225,6 @@ namespace ModelConverter
                 ThrowInvalidModelFormatException("Inconsistent face definition: not all vertices have texture coords");
         }
 
-        private void ParseVertexIndex(IReadOnlyList<string> indices, ICollection<int> vertexIndices)
-        {
-            if (!int.TryParse(indices[0], out var vertexIndex))
-                ThrowParseException("face vertex index");
-            if (vertexIndex > _model.Vertices.Count())
-                ThrowInvalidModelFormatException("Illegal vertex reference");
-
-            vertexIndices.Add(vertexIndex);
-        }
-
-        private void ParseNormalIndex(IReadOnlyList<string> indices, ICollection<int> normalIndices)
-        {
-            var normalIndex = -1;
-            if (indices.Count > 2 && !int.TryParse(indices[2], out normalIndex))
-                ThrowParseException("face normal index");
-            if (normalIndex > 0)
-                normalIndices.Add(normalIndex);
-        }
-
-        private void ParseTextureCoordIndex(IReadOnlyList<string> indices, ICollection<int> textureCoordIndices)
-        {
-            var textureCoordIndex = -1;
-            if (indices.Count > 1 && !int.TryParse(indices[1], out textureCoordIndex))
-                ThrowParseException("face texture index");
-            if (textureCoordIndex >= 0)
-                textureCoordIndices.Add(textureCoordIndex);
-        }
-
         private string[] SplitLine()
         {
             return _currentLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -209,7 +232,7 @@ namespace ModelConverter
 
         private static bool TryStrictDoubleParse(string input, out double output)
         {
-            return double.TryParse(input, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out output);
+            return double.TryParse(input, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out output);
         }
         private void ThrowParseException(string component)
         {

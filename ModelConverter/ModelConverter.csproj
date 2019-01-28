@@ -51,6 +51,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="STLModelWriter.cs" />
     <Compile Include="TextureCoord.cs" />
+    <Compile Include="Vector.cs" />
     <Compile Include="Vertex.cs" />
     <Compile Include="VertexNormal.cs" />
   </ItemGroup>

@@ -1,14 +1,32 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace ModelConverter.ConsoleApp
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            new ModelConverter().Convert(
-                new FileStream(args[0], FileMode.Open),
-                new FileStream(args[1], FileMode.OpenOrCreate) );
+            try
+            {
+                var input = new FileStream("teapot.obj", FileMode.Open);
+                var output = new FileStream("teapot.stl", FileMode.OpenOrCreate);
+                using (input)
+                using (output)
+                {
+                    var reader = new OBJModelReader(input);
+                    var writer = new STLModelWriter(output);
+                    new ModelConverter().Convert(reader, writer);
+                }
+                Console.WriteLine("Conversion successful.");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error during conversion:" + Environment.NewLine + e.Message);
+
+            }
+
+            Console.ReadLine();
         }
     }
 }
