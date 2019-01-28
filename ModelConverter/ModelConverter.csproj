@@ -47,7 +47,6 @@
     <Compile Include="InvalidModelFormatException.cs" />
     <Compile Include="Model.cs" />
     <Compile Include="ModelConverter.cs" />
-    <Compile Include="ModelValidator.cs" />
     <Compile Include="OBJModelReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="STLModelWriter.cs" />

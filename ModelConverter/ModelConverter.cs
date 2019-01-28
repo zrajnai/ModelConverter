@@ -8,7 +8,6 @@ namespace ModelConverter
         {
             var model = new OBJModelReader().Read(input);
 
-            new ModelValidator().Validate(model);
 
             new STLModelWriter().Write(output, model);
         }
