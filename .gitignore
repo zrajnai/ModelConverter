@@ -1,0 +1,36 @@
+# 
+#  Visual Studio
+# -----------------------------------------------------------------------------------------------------------
+
+*.suo
+*.user
+**/.vs/**
+
+
+# 
+#  ReSharper 
+# -----------------------------------------------------------------------------------------------------------
+
+*.DotSettings
+_ReSharper.*
+
+# Primary ReSharper settings
+!Cognex.Designer.InSight.sln.DotSettings
+
+#  Include .DotSettings for HMI (TypeScript) projects
+
+!src/Cognex.Designer.InSight.WebHMI/Cognex.Designer.InSight.WebHMI.csproj.DotSettings
+!tests/Cognex.Designer.InSight.WebHMI.Tests/Cognex.Designer.InSight.WebHMI.Tests.csproj.DotSettings
+
+
+# 
+#  Further excludes
+# -----------------------------------------------------------------------------------------------------------
+
+bin/
+obj/
+output/
+build/
+packages/
+tools/TestResult.xml
+src/UpgradeLog.htm
