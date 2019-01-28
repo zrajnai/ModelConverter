@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Face.cs" />
+    <Compile Include="IModel.cs" />
     <Compile Include="IModelReader.cs" />
     <Compile Include="IModelWriter.cs" />
     <Compile Include="InvalidModelFormatException.cs" />
@@ -53,7 +54,6 @@
     <Compile Include="TextureCoord.cs" />
     <Compile Include="Vector.cs" />
     <Compile Include="Vertex.cs" />
-    <Compile Include="VertexNormal.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

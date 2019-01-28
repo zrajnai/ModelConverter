@@ -12,7 +12,7 @@ namespace ModelConverter.ConsoleApp
             {
                 if (args.Length < 0)
                 {
-                    PrintUsage();
+                    Console.WriteLine("Specify name of input file as argument.");
                     return;
                 }
 
@@ -41,11 +41,6 @@ namespace ModelConverter.ConsoleApp
                     Console.ReadLine();
             }
 
-        }
-
-        private static void PrintUsage()
-        {
-            Console.WriteLine("Specify name of input file as argument.");
         }
     }
 }

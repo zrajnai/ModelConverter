@@ -1,9 +1,7 @@
-﻿using System.IO;
-
-namespace ModelConverter
+﻿namespace ModelConverter
 {
     public interface IModelWriter
     {
-        void Write(Model model);
+        void Write(IModel model);
     }
 }

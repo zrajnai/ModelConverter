@@ -6,7 +6,7 @@ namespace ModelConverter
     public class STLModelWriter : IModelWriter
     {
         private readonly Stream _output;
-        private Model _model;
+        private IModel _model;
 
         public STLModelWriter(Stream output)
         {
@@ -16,7 +16,7 @@ namespace ModelConverter
                 throw new ArgumentException("Output stream must be writable");
         }
 
-        public void Write(Model model)
+        public void Write(IModel model)
         {
             _model = model ?? throw new ArgumentNullException(nameof(model));
             

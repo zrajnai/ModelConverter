@@ -2,21 +2,21 @@
 
 namespace ModelConverter
 {
-    public class Model
+    internal class Model : IModel
     {
         public IReadOnlyList<Vertex> Vertices => _vertices;
-        public IReadOnlyList<VertexNormal> VertexNormals => _vertexNormals;
+        public IReadOnlyList<Vector> VertexNormals => _vertexNormals;
         public IReadOnlyList<TextureCoord> TextureCoords => _textureCoords;
         public IReadOnlyList<Face> Faces => _faces;
 
         private readonly List<Vertex> _vertices = new List<Vertex>();
-        private readonly List<VertexNormal> _vertexNormals = new List<VertexNormal>();
+        private readonly List<Vector> _vertexNormals = new List<Vector>();
         private readonly List<TextureCoord> _textureCoords = new List<TextureCoord>();
         private readonly List<Face> _faces = new List<Face>();
 
 
         public void AddVertex(Vertex v) => _vertices.Add(v);
-        public void AddVertexNormal(VertexNormal v) => _vertexNormals.Add(v);
+        public void AddVertexNormal(Vector v) => _vertexNormals.Add(v);
         public void AddTextureCoord(TextureCoord t) => _textureCoords.Add(t);
         public void AddFace(Face f)
         {

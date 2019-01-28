@@ -21,7 +21,7 @@ namespace ModelConverter
                 throw new ArgumentException("Input stream must be readable");
         }
 
-        public Model Read()
+        public IModel Read()
         {
             _model = new Model();
             var tr = new StreamReader(_input);
@@ -102,7 +102,7 @@ namespace ModelConverter
             if (!TryStrictDoubleParse(parts[3], out var z))
                 ThrowParseException("vertex normal Z");
 
-            _model.AddVertexNormal(new VertexNormal { X = x, Y = y, Z = z });
+            _model.AddVertexNormal(new Vector(x, y, z));
         }
 
         private bool IsTextureCoordDefinition() => _currentLine.StartsWith("vt ");

@@ -3,6 +3,6 @@ namespace ModelConverter
 {
     public interface IModelReader
     {
-        Model Read();
+        IModel Read();
     }
 }
