@@ -11,6 +11,9 @@ namespace ModelConverter
         public STLModelWriter(Stream output)
         {
             _output = output ?? throw new ArgumentNullException(nameof(output));
+
+            if (!_output.CanWrite)
+                throw new ArgumentException("Output stream must be writable");
         }
 
         public void Write(Model model)

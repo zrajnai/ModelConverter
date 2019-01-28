@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace ModelConverter.ConsoleApp
@@ -9,8 +10,20 @@ namespace ModelConverter.ConsoleApp
         {
             try
             {
-                var input = new FileStream("teapot.obj", FileMode.Open);
-                var output = new FileStream("teapot.stl", FileMode.OpenOrCreate);
+                if (args.Length < 0)
+                {
+                    PrintUsage();
+                    return;
+                }
+
+                if (!File.Exists(args[0]))
+                {
+                    Console.WriteLine("Input file not found.");
+                    return;
+                }
+
+                var input = new FileStream(args[0], FileMode.Open);
+                var output = new FileStream($"{Path.GetFileNameWithoutExtension(args[0])}.stl", FileMode.OpenOrCreate);
                 using (input)
                 using (output)
                 {
@@ -24,9 +37,15 @@ namespace ModelConverter.ConsoleApp
             {
                 Console.WriteLine("Error during conversion:" + Environment.NewLine + e.Message);
 
+                if (Debugger.IsAttached)
+                    Console.ReadLine();
             }
 
-            Console.ReadLine();
+        }
+
+        private static void PrintUsage()
+        {
+            Console.WriteLine("Specify name of input file as argument.");
         }
     }
 }
