@@ -44,6 +44,7 @@
     <Compile Include="Face.cs" />
     <Compile Include="IModelReader.cs" />
     <Compile Include="IModelWriter.cs" />
+    <Compile Include="InvalidModelFormatException.cs" />
     <Compile Include="Model.cs" />
     <Compile Include="ModelConverter.cs" />
     <Compile Include="ModelValidator.cs" />
