@@ -28,8 +28,8 @@ namespace ModelConverter.ConsoleApp
                 using (output)
                 {
                     var reader = new OBJModelReader();
-                    var writer = new STLModelWriter(output);
-                    writer.Write(reader.Read(input));
+                    var writer = new STLBinaryModelWriter();
+                    writer.Write(output, reader.Read(input));
                 }
                 Console.WriteLine("Conversion successful.");
             }

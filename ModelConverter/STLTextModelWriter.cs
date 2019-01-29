@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ModelConverter
 {
-    public class STLModelWriter : IModelWriter, IModelWriterAsync
+    public class STLTextModelWriter : IModelWriter, IModelWriterAsync
     {
         private Stream _output;
         private IModel _model;
@@ -13,7 +13,7 @@ namespace ModelConverter
 
         public string SupportedExtension => ".stl";
 
-        public string FormatDescription => "STL .stl file";
+        public string FormatDescription => "ASCII STL .stl file";
 
         public void Write(Stream output, IModel model)
         {
@@ -34,11 +34,10 @@ namespace ModelConverter
 
             _model = model ?? throw new ArgumentNullException(nameof(model));
             
-            using (var bw = new BinaryWriter(_output))
+            using (var streamWriter = new StreamWriter(_output))
             {
-                bw.Write(new byte[80]);
-                bw.Write((uint)_model.Faces.Count);
-
+                streamWriter.Write("solid ");
+                
                 _lastReportedProgress = 0;
                 foreach (var face in _model.Faces)
                 {
@@ -47,31 +46,29 @@ namespace ModelConverter
                     if (token.IsCancellationRequested)
                         break;
 
-                    WriteNormal(bw, face);
+                    streamWriter.Write($"facet normal {face.Normal.X} {face.Normal.Y} {face.Normal.Z}");
 
-                    WriteVertex(bw, face.VertexIndices[0]);
-                    WriteVertex(bw, face.VertexIndices[1]);
-                    WriteVertex(bw, face.VertexIndices[2]);
+                    WriteFaceVertices(streamWriter, face);
 
-                    bw.Write((ushort)0);
+                    streamWriter.Write(@"endfacet");
                 }
             }
 
         }
 
-        private void WriteNormal(BinaryWriter bw, Face face)
+        private void WriteFaceVertices(TextWriter tw, Face face)
         {
-            bw.Write((float)face.Normal.X);
-            bw.Write((float)face.Normal.Y);
-            bw.Write((float)face.Normal.Z);
+            tw.Write(@"    outer loop");
+            WriteVertex(tw, face.VertexIndices[0]);
+            WriteVertex(tw, face.VertexIndices[1]);
+            WriteVertex(tw, face.VertexIndices[2]);
+            tw.Write(@"    endloop");
         }
 
-        private void WriteVertex(BinaryWriter bw, int vertexIndex)
+        private void WriteVertex(TextWriter bw, int vertexIndex)
         {
-            var v1 = _model.Vertices[vertexIndex];
-            bw.Write((float)v1.X);
-            bw.Write((float)v1.Y);
-            bw.Write((float)v1.Z);
+            var v = _model.Vertices[vertexIndex];
+            bw.Write($"        vertex {v.X} {v.Y} {v.Z}");
         }
 
         private void ReportProgress(IProgress<double> progress)

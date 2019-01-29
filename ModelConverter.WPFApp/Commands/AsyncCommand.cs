@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace ModelConverter.WPFApp
+namespace ModelConverter.WPFApp.Commands
 {
     public class AsyncCommand : ICommand
     {

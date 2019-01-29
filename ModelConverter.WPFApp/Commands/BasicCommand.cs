@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace ModelConverter.WPFApp {
+namespace ModelConverter.WPFApp.Commands {
     public class BasicCommand : ICommand
     {
         private readonly Action _action;
