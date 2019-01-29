@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ModelConverter
 {
-    public class OBJModelReader : IModelReader
+    public class OBJModelReader : IModelReader, IModelReaderAsync
     {
         private readonly Stream _input;
         private int _currentLineNumber;
@@ -21,14 +23,29 @@ namespace ModelConverter
                 throw new ArgumentException("Input stream must be readable");
         }
 
-        public IModel Read()
+        public IModel Read() => InternalRead(CancellationToken.None);
+
+        public Task<IModel> ReadAsync(CancellationToken token, IProgress<double> progress) => Task.Run(() => InternalRead(token, progress));
+
+        private IModel InternalRead(CancellationToken token, IProgress<double> progress = null)
         {
             _model = new Model();
             var tr = new StreamReader(_input);
 
             _currentLineNumber = 0;
+
+            var lastReportedProgress = 0;
             while (!tr.EndOfStream)
             {
+                var currentProgress = (int)(100d * _input.Position / _input.Length);
+                if (currentProgress != lastReportedProgress)
+                {
+                    progress?.Report(currentProgress);
+                    lastReportedProgress = currentProgress;
+                }
+
+                if (token.IsCancellationRequested)
+                    break;
                 if (!TryParseLine(tr))
                     break;
             }
@@ -135,7 +152,7 @@ namespace ModelConverter
             if (parts.Length < 4)
                 ThrowInvalidModelFormatException("Too few parameters for face");
             if (parts.Length > 5)
-                return;//ThrowInvalidModelFormatException("Sorry, only triangular and quad faces are supported");
+                return; //ThrowInvalidModelFormatException("Sorry, only triangular and quad faces are supported");
 
             var vertexIndices = new List<int>(3);
             var textureCoordIndices = new List<int>(3);
@@ -194,6 +211,8 @@ namespace ModelConverter
                 ThrowParseException("face vertex index");
             if (vertexIndex > _model.Vertices.Count)
                 ThrowInvalidModelFormatException("Illegal vertex reference");
+            if (vertexIndex < 0)
+                vertexIndex = _model.Vertices.Count - vertexIndex + 1;
 
             vertexIndices.Add(vertexIndex - 1);
         }
@@ -248,5 +267,6 @@ namespace ModelConverter
         }
 
         private string CurrentLineMessage() => $"({_currentLineNumber}): " + _currentLine;
+
     }
 }

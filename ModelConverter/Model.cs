@@ -14,7 +14,6 @@ namespace ModelConverter
         private readonly List<TextureCoord> _textureCoords = new List<TextureCoord>();
         private readonly List<Face> _faces = new List<Face>();
 
-
         public void AddVertex(Vertex v) => _vertices.Add(v);
         public void AddVertexNormal(Vector v) => _vertexNormals.Add(v);
         public void AddTextureCoord(TextureCoord t) => _textureCoords.Add(t);

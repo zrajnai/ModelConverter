@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelConverter", "ModelConv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelConverter.ConsoleApp", "ModelConverter.ConsoleApp\ModelConverter.ConsoleApp.csproj", "{15DD3C13-A4EF-456A-94AE-179BDDB6F7A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelConverter.WPFApp", "ModelConverter.WPFApp\ModelConverter.WPFApp.csproj", "{514D37FA-EA7E-4010-A5F1-1403C4BB0E51}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{15DD3C13-A4EF-456A-94AE-179BDDB6F7A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15DD3C13-A4EF-456A-94AE-179BDDB6F7A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15DD3C13-A4EF-456A-94AE-179BDDB6F7A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{514D37FA-EA7E-4010-A5F1-1403C4BB0E51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{514D37FA-EA7E-4010-A5F1-1403C4BB0E51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{514D37FA-EA7E-4010-A5F1-1403C4BB0E51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{514D37FA-EA7E-4010-A5F1-1403C4BB0E51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

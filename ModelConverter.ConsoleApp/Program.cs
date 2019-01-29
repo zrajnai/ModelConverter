@@ -29,7 +29,7 @@ namespace ModelConverter.ConsoleApp
                 {
                     var reader = new OBJModelReader(input);
                     var writer = new STLModelWriter(output);
-                    new ModelConverter().Convert(reader, writer);
+                    new Converter().Convert(reader, writer);
                 }
                 Console.WriteLine("Conversion successful.");
             }
