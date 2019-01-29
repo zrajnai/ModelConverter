@@ -6,20 +6,20 @@ namespace ModelConverter
 {
     public class Converter
     {
-        public void Convert(
-            IModelReader reader,
-            IModelWriter writer)
+        public void Convert(IModelReader reader, IModelWriter writer)
         {
             writer.Write(reader.Read());
         }
         
-        public async Task ConvertAsync(
+        public async Task<IModel> ConvertAsync(
             CancellationToken token,
             IProgress<double> progress,
             IModelReaderAsync reader,
             IModelWriter writer)
         {
-            writer.Write(await reader.ReadAsync(token, progress));
+            var model = await reader.ReadAsync(token, progress);
+            writer.Write(model);
+            return model;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -19,6 +20,8 @@ namespace ModelConverter.WPFApp
         private readonly AsyncCommand _convertCommand;
         private double _progressValue;
         private bool _converting;
+        private string _area;
+        private string _volume;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -48,16 +51,28 @@ namespace ModelConverter.WPFApp
             set => SetBackingField(ref _progressValue, value);
         }
 
-        public ICommand BrowseInputFileCommand { get; }
-        public ICommand BrowseOutputFileCommand { get; }
-        public ICommand ExitCommand { get; }
-        public ICommand ConvertCommand => _convertCommand;
-
         public bool Converting
         {
             get => _converting;
             set => SetBackingField(ref _converting, value);
         }
+
+        public string Area
+        {
+            get => _area;
+            set => SetBackingField(ref _area, value);
+        }
+
+        public string Volume
+        {
+            get => _volume;
+            set => SetBackingField(ref _volume, value);
+        }
+
+        public ICommand BrowseInputFileCommand { get; }
+        public ICommand BrowseOutputFileCommand { get; }
+        public ICommand ExitCommand { get; }
+        public ICommand ConvertCommand => _convertCommand;
 
         public MainViewModel()
         {
@@ -79,10 +94,13 @@ namespace ModelConverter.WPFApp
                 using (input)
                 using (output)
                 {
-                    await new Converter().ConvertAsync(new CancellationToken(),
+                    var model = await new Converter().ConvertAsync(new CancellationToken(),
                                                        new Progress<double>(ProgressHandler),
                                                        new OBJModelReader(input),
                                                        new STLModelWriter(output));
+
+                    Area = new AreaCalculator().Calculate(model).ToString("#.###", CultureInfo.InvariantCulture);
+                    Volume = new VolumeCalculator().Calculate(model).ToString("#.###", CultureInfo.InvariantCulture);
                 }
             }
             finally

@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AreaCalculator.cs" />
     <Compile Include="Face.cs" />
     <Compile Include="IModel.cs" />
     <Compile Include="IModelReader.cs" />
@@ -54,6 +55,7 @@
     <Compile Include="TextureCoord.cs" />
     <Compile Include="Vector.cs" />
     <Compile Include="Vertex.cs" />
+    <Compile Include="VolumeCalculator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

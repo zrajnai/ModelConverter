@@ -9,6 +9,7 @@ namespace ModelConverter.WPFApp
     {
         public MainWindow()
         {
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
             InitializeComponent();
 
             DataContext = new MainViewModel();
