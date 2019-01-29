@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Linq;
+using System.Windows;
 
 namespace ModelConverter.WPFApp
 {
@@ -12,7 +13,9 @@ namespace ModelConverter.WPFApp
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             InitializeComponent();
 
-            DataContext = new MainViewModel();
+            var readers = new[] { new OBJModelReader() };
+            var writers = new[] { new STLModelWriter() };
+            DataContext = new MainViewModel(readers, writers);
         }
     }
 

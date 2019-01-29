@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,8 @@ namespace ModelConverter.WPFApp
 {
     public class MainViewModel : INotifyPropertyChanged
     {
+        private readonly IEnumerable<IModelReaderAsync> _readers;
+        private readonly IEnumerable<IModelWriterAsync> _writers;
         private string _inputFilePath;
         private string _outputFilePath;
         private readonly AsyncCommand _convertCommand;
@@ -22,6 +25,8 @@ namespace ModelConverter.WPFApp
         private bool _converting;
         private string _area;
         private string _volume;
+        private bool _hasError;
+        private string _errorMessage;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -45,6 +50,9 @@ namespace ModelConverter.WPFApp
             }
         }
 
+        public string[] OutputFormats { get; }
+        public string SelectedOutputFormat { get; set; }
+
         public double ProgressValue
         {
             get => _progressValue;
@@ -55,6 +63,18 @@ namespace ModelConverter.WPFApp
         {
             get => _converting;
             set => SetBackingField(ref _converting, value);
+        }
+
+        public bool HasError
+        {
+            get => _hasError;
+            set => SetBackingField(ref _hasError, value);
+        }
+
+        public string ErrorMessage
+        {
+            get => _errorMessage;
+            set => SetBackingField(ref _errorMessage, value);
         }
 
         public string Area
@@ -74,8 +94,22 @@ namespace ModelConverter.WPFApp
         public ICommand ExitCommand { get; }
         public ICommand ConvertCommand => _convertCommand;
 
-        public MainViewModel()
+        public MainViewModel(IEnumerable<IModelReaderAsync> readers,
+                             IEnumerable<IModelWriterAsync> writers)
         {
+            if (!readers.Any())
+                throw new ArgumentException(nameof(readers));
+
+            if (!writers.Any())
+                throw new ArgumentException(nameof(writers));
+
+            _readers = readers;
+            _writers = writers;
+
+            HasError = false;
+            OutputFormats = _writers.Select(w => w.FormatDescription).ToArray();
+            SelectedOutputFormat = OutputFormats.First();
+            
             BrowseInputFileCommand = new BasicCommand(BrowseInput);
             BrowseOutputFileCommand = new BasicCommand(BrowseOutput);
             ExitCommand = new BasicCommand(() => Application.Current.Shutdown(0));
@@ -87,6 +121,7 @@ namespace ModelConverter.WPFApp
         private async Task Convert()
         {
             Converting = true;
+            HasError = false;
             try
             {
                 var input = new FileStream(InputFilePath, FileMode.Open);
@@ -94,24 +129,28 @@ namespace ModelConverter.WPFApp
                 using (input)
                 using (output)
                 {
-                    var model = await new Converter().ConvertAsync(new CancellationToken(),
-                                                       new Progress<double>(ProgressHandler),
-                                                       new OBJModelReader(input),
-                                                       new STLModelWriter(output));
+                    var reader = _readers.FirstOrDefault(r => r.SupportedExtension == Path.GetExtension(InputFilePath));
+                    if (reader == null)
+                        return; // TODO : handle error
+
+                    var cancellationToken = new CancellationToken();
+                    var model = await reader.ReadAsync(input, cancellationToken, new Progress<double>(d => ProgressValue = d * 0.5));
+                    await new STLModelWriter().WriteAsync(output, cancellationToken, new Progress<double>(d => ProgressValue = (100 + d) * 0.5), model);
 
                     Area = new AreaCalculator().Calculate(model).ToString("#.###", CultureInfo.InvariantCulture);
                     Volume = new VolumeCalculator().Calculate(model).ToString("#.###", CultureInfo.InvariantCulture);
                 }
             }
+            catch (Exception e)
+            {
+                Converting = false;
+                HasError = true;
+                ErrorMessage = e.Message;
+            }
             finally
             {
                 Converting = false;
             }
-        }
-
-        private void ProgressHandler(double progress)
-        {
-            ProgressValue = progress;
         }
 
         private void BrowseInput()
@@ -121,7 +160,7 @@ namespace ModelConverter.WPFApp
                 Title = "Select input file",
                 Multiselect = false,
                 AddExtension = true,
-                Filter = "OBJ files (*.obj)|*.obj"
+                Filter = GetFilterString()
             };
 
             if (d.ShowDialog() != true)
@@ -129,11 +168,11 @@ namespace ModelConverter.WPFApp
 
             InputFilePath = d.FileName;
 
-            if (string.IsNullOrEmpty(OutputFilePath))
-                OutputFilePath = Path.GetDirectoryName(InputFilePath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(InputFilePath) + ".stl";
-            else
-                OutputFilePath = Path.GetDirectoryName(OutputFilePath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(InputFilePath) + ".stl";
+            var basePath = string.IsNullOrEmpty(OutputFilePath) ? InputFilePath : OutputFilePath;
+            OutputFilePath = Path.GetDirectoryName(basePath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(InputFilePath) + ".stl";
         }
+
+        private string GetFilterString() => _readers.Aggregate("", (current, reader) => current + $"{reader.FormatDescription}|*{reader.SupportedExtension}");
 
         private void BrowseOutput()
         {

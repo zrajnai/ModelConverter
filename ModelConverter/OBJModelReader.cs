@@ -10,47 +10,54 @@ namespace ModelConverter
 {
     public class OBJModelReader : IModelReader, IModelReaderAsync
     {
-        private readonly Stream _input;
+        private Stream _input;
         private int _currentLineNumber;
         private string _currentLine;
+        private int _lastReportedProgress;
         private Model _model;
 
-        public OBJModelReader(Stream input)
+        public string SupportedExtension => ".obj";
+
+        public string FormatDescription => "Wavefront .obj file";
+
+        public IModel Read(Stream input) => InternalRead(input, CancellationToken.None);
+
+        public Task<IModel> ReadAsync(Stream input, CancellationToken token, IProgress<double> progress) => Task.Run(() => InternalRead(input, token, progress));
+
+        private IModel InternalRead(Stream input, CancellationToken token, IProgress<double> progress = null)
         {
             _input = input ?? throw new ArgumentNullException(nameof(input));
 
             if (!_input.CanRead)
                 throw new ArgumentException("Input stream must be readable");
-        }
 
-        public IModel Read() => InternalRead(CancellationToken.None);
-
-        public Task<IModel> ReadAsync(CancellationToken token, IProgress<double> progress) => Task.Run(() => InternalRead(token, progress));
-
-        private IModel InternalRead(CancellationToken token, IProgress<double> progress = null)
-        {
             _model = new Model();
             var tr = new StreamReader(_input);
 
             _currentLineNumber = 0;
 
-            var lastReportedProgress = 0;
+            _lastReportedProgress = 0;
             while (!tr.EndOfStream)
             {
-                var currentProgress = (int)(100d * _input.Position / _input.Length);
-                if (currentProgress != lastReportedProgress)
-                {
-                    progress?.Report(currentProgress);
-                    lastReportedProgress = currentProgress;
-                }
+                ReportProgress(progress);
 
                 if (token.IsCancellationRequested)
                     break;
+
                 if (!TryParseLine(tr))
                     break;
             }
 
             return _model;
+        }
+
+        private void ReportProgress(IProgress<double> progress)
+        {
+            var currentProgress = (int)(100d * _input.Position / _input.Length);
+            if (currentProgress == _lastReportedProgress)
+                return;
+            progress?.Report(currentProgress);
+            _lastReportedProgress = currentProgress;
         }
 
         private bool TryParseLine(TextReader tr)

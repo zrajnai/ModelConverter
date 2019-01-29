@@ -27,9 +27,9 @@ namespace ModelConverter.ConsoleApp
                 using (input)
                 using (output)
                 {
-                    var reader = new OBJModelReader(input);
+                    var reader = new OBJModelReader();
                     var writer = new STLModelWriter(output);
-                    new Converter().Convert(reader, writer);
+                    writer.Write(reader.Read(input));
                 }
                 Console.WriteLine("Conversion successful.");
             }

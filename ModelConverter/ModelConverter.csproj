@@ -48,7 +48,6 @@
     <Compile Include="IModelWriter.cs" />
     <Compile Include="InvalidModelFormatException.cs" />
     <Compile Include="Model.cs" />
-    <Compile Include="Converter.cs" />
     <Compile Include="OBJModelReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="STLModelWriter.cs" />

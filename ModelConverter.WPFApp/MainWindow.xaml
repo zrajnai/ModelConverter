@@ -7,7 +7,8 @@
         mc:Ignorable="d"
         ResizeMode="CanResizeWithGrip"
         WindowStyle="ToolWindow"
-        Title="Model Converter" MaxHeight="230" MinHeight="230" Height="225" MinWidth="300" Width="300">
+        d:DataContext="{d:DesignInstance wpfApp:MainViewModel}"
+        Title="Model Converter" MaxHeight="280" MinHeight="280" Height="280" MinWidth="300" Width="300">
     <Window.Resources>
         <!-- One style for each *type* of control on the window -->
         <Style TargetType="Button">
@@ -23,17 +24,28 @@
             <Setter Property="Margin" Value="5,5" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Height" Value="25" />
+            <Setter Property="Margin" Value="5,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
 
         <wpfApp:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Window.Resources>
     <DockPanel LastChildFill="True">
-        <StatusBar DockPanel.Dock="Bottom" Height="20" HorizontalContentAlignment="Stretch">
-            <StatusBarItem HorizontalContentAlignment="Stretch">
-                <ProgressBar Value="{Binding ProgressValue}" Height="10" Width="auto" Margin="0,0,20,0"
-                             Visibility="{Binding Converting, Converter={StaticResource BooleanToVisibilityConverter}}" />
+        <StatusBar DockPanel.Dock="Bottom" Height="25" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid />
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem  HorizontalContentAlignment="Stretch" Visibility="{Binding Converting, Converter={StaticResource BooleanToVisibilityConverter}}" >
+                <ProgressBar Value="{Binding ProgressValue}" Height="10" Margin="0,0,20,0"/>
             </StatusBarItem>
-            
+            <StatusBarItem HorizontalContentAlignment="Stretch" Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}" >
+                <TextBlock Text="{Binding ErrorMessage}"/>
+            </StatusBarItem>
         </StatusBar>
 
         <DockPanel Margin="3">
@@ -53,16 +65,20 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <Label Grid.Column="0" Grid.Row="0" Content="Input:" />
                     <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding InputFilePath, Mode=TwoWay}" />
                     <Button Grid.Column="2" Grid.Row="0" Command="{Binding BrowseInputFileCommand}" Content="Browse..."/>
 
-                    <Label Grid.Column="0" Grid.Row="1" Content="Output:" />
-                    <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding OutputFilePath, Mode=TwoWay}"/>
-                    <Button Grid.Column="2" Grid.Row="1" Command="{Binding BrowseOutputFileCommand}" Content="Browse..."/>
-                </Grid>
+                    <Label Grid.Column="0" Grid.Row="2" Content="Output:" />
+                    <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding OutputFilePath, Mode=TwoWay}"/>
+                    <Button Grid.Column="2" Grid.Row="2" Command="{Binding BrowseOutputFileCommand}" Content="Browse..."/>
+
+                    <ComboBox Grid.Column="1" Grid.Row="1"
+                              ItemsSource="{Binding OutputFormats}"
+                              SelectedItem="{Binding SelectedOutputFormat}"></ComboBox></Grid>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" SharedSizeGroup="Labels" />
