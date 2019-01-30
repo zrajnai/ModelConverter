@@ -37,7 +37,7 @@ namespace ModelConverter.Calculators
             results.Add(new[] { vertices[i0], vertices[i1], vertices[i2] });
             Debug.Assert(vertices.Remove(vertices[i1]));
 
-            Triangulate(model, f, vertices, results, i1);
+            Triangulate(model, f, vertices, results, i2);
             return results;
         }
 

@@ -109,7 +109,7 @@
                     <TextBox Grid.Column="1" Grid.Row="1" IsReadOnly="True" Text="{Binding Volume}" />
 
                 </Grid>
-                <Expander Margin="5,0" Header="Transformation" IsExpanded="False" DataContext="{Binding Transion}">
+                <Expander Margin="5,0" Header="Transformation" IsExpanded="False" DataContext="{Binding Transformation}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Labels" />
