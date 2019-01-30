@@ -1,16 +1,17 @@
 ﻿using System.Linq;
+using ModelConverter.Math;
 using ModelConverter.Model;
 
 namespace ModelConverter.Calculators
 {
-    public class VolumeCalculator
+    public static class VolumeCalculator
     {
-        public double Calculate(IModel model)
+        public static double Calculate(IModel model)
         {
             return model.Faces.Sum(face => CalculateVolume(model, face));
         }
 
-        private double CalculateVolume(IModel model, Face face)
+        private static double CalculateVolume(IModel model, Face face)
         {
             var v0 = model.Vertices[face.VertexIndices[0]];
             var v1 = model.Vertices[face.VertexIndices[1]];
@@ -19,7 +20,7 @@ namespace ModelConverter.Calculators
             return VolumeOfTetrahedron((Vector)v0, (Vector)v1, (Vector)v2);
         }
 
-        private double VolumeOfTetrahedron(Vector p1, Vector p2, Vector p3)
+        private static double VolumeOfTetrahedron(Vector p1, Vector p2, Vector p3)
         {
             var v321 = p3.X * p2.Y * p1.Z;
             var v231 = p2.X * p3.Y * p1.Z;

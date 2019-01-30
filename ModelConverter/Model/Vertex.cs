@@ -1,4 +1,6 @@
-﻿namespace ModelConverter.Model
+﻿using ModelConverter.Math;
+
+namespace ModelConverter.Model
 {
     public class Vertex
     {

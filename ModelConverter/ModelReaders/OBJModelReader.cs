@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ModelConverter.Math;
 using ModelConverter.Model;
 
 namespace ModelConverter.ModelReaders

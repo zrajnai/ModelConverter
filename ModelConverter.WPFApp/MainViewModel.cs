@@ -12,7 +12,6 @@ using System.Windows.Input;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using ModelConverter.Calculators;
-using ModelConverter.ModelWriters;
 using ModelConverter.WPFApp.Commands;
 
 namespace ModelConverter.WPFApp
@@ -28,13 +27,15 @@ namespace ModelConverter.WPFApp
         private bool _converting;
         private string _area;
         private string _volume;
-        private bool _hasError;
-        private string _errorMessage;
+        private bool _hasStatus;
+        private string _statusMessage;
         private string _selectedOutputFormat;
         private IModelWriterAsync _selectedWriter;
         private CancellationTokenSource _cancellationTokenSource;
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public TransformationViewModel Transformation { get; } = new TransformationViewModel();
 
         public string OutputFilePath
         {
@@ -80,19 +81,19 @@ namespace ModelConverter.WPFApp
             set => SetBackingField(ref _converting, value);
         }
 
-        public bool HasError
+        public bool HasStatus
         {
-            get => _hasError;
-            set => SetBackingField(ref _hasError, value);
+            get => _hasStatus;
+            set => SetBackingField(ref _hasStatus, value);
         }
 
-        public string ErrorMessage
+        public string StatusMessage
         {
-            get => _errorMessage;
+            get => _statusMessage;
             set
             {
-                SetBackingField(ref _errorMessage, value);
-                HasError = !string.IsNullOrEmpty(_errorMessage);
+                SetBackingField(ref _statusMessage, value);
+                HasStatus = !string.IsNullOrEmpty(_statusMessage);
             }
         }
 
@@ -154,7 +155,7 @@ namespace ModelConverter.WPFApp
             Area = string.Empty;
             Volume = string.Empty;
             Converting = true;
-            ErrorMessage = string.Empty;
+            StatusMessage = string.Empty;
 
             try
             {
@@ -167,21 +168,26 @@ namespace ModelConverter.WPFApp
 
                     _cancellationTokenSource = new CancellationTokenSource();
                     var model = await reader.ReadAsync(input, _cancellationTokenSource.Token, new Progress<double>(d => ProgressValue = d * 0.5));
+
+                    model = ModelTransformer.Transform(model, Transformation.Matrix);
+
                     await _selectedWriter.WriteAsync(output, _cancellationTokenSource.Token, new Progress<double>(d => ProgressValue = (100 + d) * 0.5), model);
 
-                    Area = new AreaCalculator().Calculate(model).ToString("#.###", CultureInfo.InvariantCulture);
-                    Volume = new VolumeCalculator().Calculate(model).ToString("#.###", CultureInfo.InvariantCulture);
+                    Area = AreaCalculator.Calculate(model).ToString("#.###", CultureInfo.InvariantCulture);
+                    Volume = VolumeCalculator.Calculate(model).ToString("#.###", CultureInfo.InvariantCulture);
+
+                    StatusMessage = "Conversion successful.";
                 }
             }
             catch (Exception e)
             {
-                ErrorMessage = e.Message;
+                StatusMessage = e.Message;
             }
             finally
             {
                 if (_cancellationTokenSource?.IsCancellationRequested == true)
                 {
-                    ErrorMessage = "Canceled";
+                    StatusMessage = "Canceled";
                 }
                 Converting = false;
             }
@@ -191,7 +197,7 @@ namespace ModelConverter.WPFApp
         {
             var reader = _readers.FirstOrDefault(r => r.SupportedExtension == Path.GetExtension(InputFilePath));
             if (reader == null)
-                throw new ApplicationException("Internal error");
+                throw new ApplicationException("Internal error!");
             return reader;
         }
 
@@ -202,7 +208,7 @@ namespace ModelConverter.WPFApp
                 Title = "Select input file",
                 Multiselect = false,
                 AddExtension = true,
-                Filter = GetFilterString()
+                Filter = _readers.Aggregate("", (current, reader) => current + $"{reader.FormatDescription}|*{reader.SupportedExtension}|").TrimEnd('|')
             };
 
             if (d.ShowDialog() != true)
@@ -213,8 +219,6 @@ namespace ModelConverter.WPFApp
             var basePath = string.IsNullOrEmpty(OutputFilePath) ? InputFilePath : OutputFilePath;
             OutputFilePath = GenerateOutFilePath(basePath);
         }
-
-        private string GetFilterString() => _readers.Aggregate("", (current, reader) => current + $"{reader.FormatDescription}|*{reader.SupportedExtension}|").TrimEnd('|');
 
         private void DoBrowseOutput()
         {

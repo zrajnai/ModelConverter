@@ -1,16 +1,17 @@
 ﻿using System.Linq;
+using ModelConverter.Math;
 using ModelConverter.Model;
 
 namespace ModelConverter.Calculators
 {
-    public class AreaCalculator
+    public static class AreaCalculator
     {
-        public double Calculate(IModel model)
+        public static double Calculate(IModel model)
         {
             return model.Faces.Sum(face => CalculateArea(model, face));
         }
 
-        private double CalculateArea(IModel model, Face face)
+        private static double CalculateArea(IModel model, Face face)
         {
             var v0 = model.Vertices[face.VertexIndices[0]];
             var v1 = model.Vertices[face.VertexIndices[1]];

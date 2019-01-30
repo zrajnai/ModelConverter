@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using ModelConverter.Math;
 using ModelConverter.Model;
 
 namespace ModelConverter.ModelWriters

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using ModelConverter.Model;
 
-namespace ModelConverter.Model
+namespace ModelConverter.Math
 {
     public class Vector
     {
@@ -24,7 +24,7 @@ namespace ModelConverter.Model
             return new Vector(v1.X - v2.X, v1.Y - v2.Y, v1.Z - v2.Z);
         }
 
-        public double Length => Math.Sqrt(X * X + Y * Y + Z * Z);
+        public double Length => System.Math.Sqrt(X * X + Y * Y + Z * Z);
 
         public Vector Normalize()
         {

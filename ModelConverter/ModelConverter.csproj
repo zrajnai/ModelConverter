@@ -43,18 +43,20 @@
   <ItemGroup>
     <Compile Include="Calculators\AreaCalculator.cs" />
     <Compile Include="ModelReaders\STLBinaryModelReader.cs" />
+    <Compile Include="ModelTransformer.cs" />
     <Compile Include="ModelWriters\STLTextModelWriter.cs" />
     <Compile Include="Model\Face.cs" />
     <Compile Include="IModel.cs" />
     <Compile Include="IModelReader.cs" />
     <Compile Include="IModelWriter.cs" />
     <Compile Include="InvalidModelFormatException.cs" />
+    <Compile Include="Math\Matrix.cs" />
     <Compile Include="Model\Model.cs" />
     <Compile Include="ModelReaders\OBJModelReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ModelWriters\STLBinaryModelWriter.cs" />
     <Compile Include="Model\TextureCoord.cs" />
-    <Compile Include="Model\Vector.cs" />
+    <Compile Include="Math\Vector.cs" />
     <Compile Include="Model\Vertex.cs" />
     <Compile Include="Calculators\VolumeCalculator.cs" />
   </ItemGroup>
