@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ModelConverter
+namespace ModelConverter.Model
 {
     internal class Model : IModel
     {
@@ -19,6 +19,9 @@ namespace ModelConverter
         public void AddTextureCoord(TextureCoord t) => _textureCoords.Add(t);
         public void AddFace(Face f)
         {
+
+            f.Normal = f.Normal ?? CalculateNormal(f.VertexIndices);
+
             if (f.VertexIndices.Length == 3)
             {
                 _faces.Add(f);
@@ -44,6 +47,21 @@ namespace ModelConverter
                     : new int[0],
             };
         }
-    }
 
+        private Vector CalculateNormal(IList<int> vertexIndices)
+        {
+            // Note : supposes that the first 3 vertices are non convex!
+            var v1 = Vertices[vertexIndices[0]];
+            var v2 = Vertices[vertexIndices[1]];
+            var v3 = Vertices[vertexIndices[2]];
+
+            var v31 = (Vector)v3 - (Vector)v1;
+            var v21 = (Vector)v2 - (Vector)v1;
+
+            var n = (v31 % v21).Normalize();
+
+            return new Vector(n.X, n.Y, n.Z);
+
+        }
+    }
 }

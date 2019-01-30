@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ModelConverter
+namespace ModelConverter.Model
 {
     public class Vector
     {

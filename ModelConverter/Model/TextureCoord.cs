@@ -1,4 +1,4 @@
-﻿namespace ModelConverter
+﻿namespace ModelConverter.Model
 {
     public class TextureCoord
     {

@@ -11,6 +11,8 @@ using System.Windows;
 using System.Windows.Input;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using ModelConverter.Calculators;
+using ModelConverter.ModelWriters;
 using ModelConverter.WPFApp.Commands;
 
 namespace ModelConverter.WPFApp
@@ -161,13 +163,11 @@ namespace ModelConverter.WPFApp
                 using (input)
                 using (output)
                 {
-                    var reader = _readers.FirstOrDefault(r => r.SupportedExtension == Path.GetExtension(InputFilePath));
-                    if (reader == null)
-                        throw new ApplicationException("Internal error");
+                    var reader = SelectReader();
 
                     _cancellationTokenSource = new CancellationTokenSource();
                     var model = await reader.ReadAsync(input, _cancellationTokenSource.Token, new Progress<double>(d => ProgressValue = d * 0.5));
-                    await new STLBinaryModelWriter().WriteAsync(output, _cancellationTokenSource.Token, new Progress<double>(d => ProgressValue = (100 + d) * 0.5), model);
+                    await _selectedWriter.WriteAsync(output, _cancellationTokenSource.Token, new Progress<double>(d => ProgressValue = (100 + d) * 0.5), model);
 
                     Area = new AreaCalculator().Calculate(model).ToString("#.###", CultureInfo.InvariantCulture);
                     Volume = new VolumeCalculator().Calculate(model).ToString("#.###", CultureInfo.InvariantCulture);
@@ -185,6 +185,14 @@ namespace ModelConverter.WPFApp
                 }
                 Converting = false;
             }
+        }
+
+        private IModelReaderAsync SelectReader()
+        {
+            var reader = _readers.FirstOrDefault(r => r.SupportedExtension == Path.GetExtension(InputFilePath));
+            if (reader == null)
+                throw new ApplicationException("Internal error");
+            return reader;
         }
 
         private void DoBrowseInput()
@@ -206,7 +214,7 @@ namespace ModelConverter.WPFApp
             OutputFilePath = GenerateOutFilePath(basePath);
         }
 
-        private string GetFilterString() => _readers.Aggregate("", (current, reader) => current + $"{reader.FormatDescription}|*{reader.SupportedExtension}");
+        private string GetFilterString() => _readers.Aggregate("", (current, reader) => current + $"{reader.FormatDescription}|*{reader.SupportedExtension}|").TrimEnd('|');
 
         private void DoBrowseOutput()
         {
@@ -234,7 +242,14 @@ namespace ModelConverter.WPFApp
 
         private string GenerateOutFilePath(string basePath)
         {
-            return Path.GetDirectoryName(basePath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(InputFilePath) + _selectedWriter.SupportedExtension;
+            var outputPath = Path.GetDirectoryName(basePath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(InputFilePath) + _selectedWriter.SupportedExtension;
+            if (outputPath != InputFilePath)
+                return outputPath;
+
+            var fileName = Path.GetFileNameWithoutExtension(outputPath) + "(1)" + Path.GetExtension(outputPath);
+            var dir = Path.GetDirectoryName(outputPath);
+            outputPath = dir + Path.DirectorySeparatorChar + fileName;
+            return outputPath;
         }
 
         private bool SetBackingField<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
@@ -245,7 +260,6 @@ namespace ModelConverter.WPFApp
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             return true;
         }
-
     }
 
 }

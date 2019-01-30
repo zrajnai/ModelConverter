@@ -5,8 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ModelConverter.Model;
 
-namespace ModelConverter
+namespace ModelConverter.ModelReaders
 {
     public class OBJModelReader : IModelReader, IModelReaderAsync
     {
@@ -14,7 +15,7 @@ namespace ModelConverter
         private int _currentLineNumber;
         private string _currentLine;
         private int _lastReportedProgress;
-        private Model _model;
+        private Model.Model _model;
 
         public string SupportedExtension => ".obj";
 
@@ -31,33 +32,24 @@ namespace ModelConverter
             if (!_input.CanRead)
                 throw new ArgumentException("Input stream must be readable");
 
-            _model = new Model();
-            var tr = new StreamReader(_input);
-
+            _model = new Model.Model();
             _currentLineNumber = 0;
-
             _lastReportedProgress = 0;
-            while (!tr.EndOfStream)
+
+            using (var tr = new StreamReader(_input))
             {
-                ReportProgress(progress);
+                while (!tr.EndOfStream)
+                {
+                    ReportProgress(progress);
 
-                if (token.IsCancellationRequested)
-                    break;
+                    if (token.IsCancellationRequested)
+                        break;
 
-                if (!TryParseLine(tr))
-                    break;
+                    if (!TryParseLine(tr))
+                        break;
+                }
             }
-
             return _model;
-        }
-
-        private void ReportProgress(IProgress<double> progress)
-        {
-            var currentProgress = (int)(100d * _input.Position / _input.Length);
-            if (currentProgress == _lastReportedProgress)
-                return;
-            progress?.Report(currentProgress);
-            _lastReportedProgress = currentProgress;
         }
 
         private bool TryParseLine(TextReader tr)
@@ -173,32 +165,14 @@ namespace ModelConverter
 
             ValidateNormalIndices(normalIndices, vertexIndices);
 
-            var normalVector = CalculateNormal(vertexIndices);
-
             _model.AddFace(new Face
             {
                 VertexIndices = vertexIndices.ToArray(),
                 NormalIndices = normalIndices.ToArray(),
                 TextureCoordIndices = textureCoordIndices.ToArray(),
-                Normal = normalVector
             });
         }
-
-        private Vector CalculateNormal(IList<int> vertexIndices)
-        {
-            var v1 = _model.Vertices[vertexIndices[0]];
-            var v2 = _model.Vertices[vertexIndices[1]];
-            var v3 = _model.Vertices[vertexIndices[2]];
-
-            var v31 = (Vector)v3 - (Vector)v1;
-            var v21 = (Vector)v2 - (Vector)v1;
-
-            var n = (v31 % v21).Normalize();
-
-            return new Vector(n.X, n.Y, n.Z);
-
-        }
-
+        
         private void ParseFaceIndexBundle(string part, ICollection<int> vertexIndices, List<int> textureCoordIndices, List<int> normalIndices)
         {
             var indices = part.Split('/');
@@ -274,6 +248,15 @@ namespace ModelConverter
         }
 
         private string CurrentLineMessage() => $"({_currentLineNumber}): " + _currentLine;
+
+        private void ReportProgress(IProgress<double> progress)
+        {
+            var currentProgress = (int)(100d * _input.Position / _input.Length);
+            if (currentProgress == _lastReportedProgress)
+                return;
+            progress?.Report(currentProgress);
+            _lastReportedProgress = currentProgress;
+        }
 
     }
 }

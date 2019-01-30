@@ -1,4 +1,6 @@
 ﻿using System.Windows;
+using ModelConverter.ModelReaders;
+using ModelConverter.ModelWriters;
 
 namespace ModelConverter.WPFApp
 {
@@ -12,7 +14,11 @@ namespace ModelConverter.WPFApp
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             InitializeComponent();
 
-            var readers = new IModelReaderAsync[] { new OBJModelReader() };
+            var readers = new IModelReaderAsync[]
+            {
+                new OBJModelReader(),
+                new STLBinaryModelReader()
+            };
             var writers = new IModelWriterAsync[]
             {
                 new STLBinaryModelWriter(),

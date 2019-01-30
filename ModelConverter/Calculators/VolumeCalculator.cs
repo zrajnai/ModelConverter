@@ -1,6 +1,7 @@
 ﻿using System.Linq;
+using ModelConverter.Model;
 
-namespace ModelConverter
+namespace ModelConverter.Calculators
 {
     public class VolumeCalculator
     {
