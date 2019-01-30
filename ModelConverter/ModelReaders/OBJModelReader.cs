@@ -10,7 +10,7 @@ using ModelConverter.Model;
 
 namespace ModelConverter.ModelReaders
 {
-    public class OBJModelReader : IModelReader, IModelReaderAsync
+    public class OBJModelReader : IModelReaderAsync
     {
         private Stream _input;
         private int _currentLineNumber;
@@ -21,8 +21,6 @@ namespace ModelConverter.ModelReaders
         public string SupportedExtension => ".obj";
 
         public string FormatDescription => "Wavefront .obj file";
-
-        public IModel Read(Stream input) => InternalRead(input, CancellationToken.None);
 
         public Task<IModel> ReadAsync(Stream input, CancellationToken token, IProgress<double> progress) => Task.Run(() => InternalRead(input, token, progress));
 

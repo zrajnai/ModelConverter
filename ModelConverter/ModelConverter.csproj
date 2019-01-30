@@ -49,8 +49,8 @@
     <Compile Include="ModelWriters\STLTextModelWriter.cs" />
     <Compile Include="Model\Face.cs" />
     <Compile Include="IModel.cs" />
-    <Compile Include="IModelReader.cs" />
-    <Compile Include="IModelWriter.cs" />
+    <Compile Include="IModelReaderAsync.cs" />
+    <Compile Include="IModelWriterAsync.cs" />
     <Compile Include="InvalidModelFormatException.cs" />
     <Compile Include="Math\Matrix.cs" />
     <Compile Include="Model\Model.cs" />

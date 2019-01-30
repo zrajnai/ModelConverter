@@ -17,11 +17,6 @@ namespace ModelConverter.ModelWriters
 
         public string FormatDescription => "Binary STL .stl file";
 
-        public IModel Read(Stream input)
-        {
-            return InternalRead(input, CancellationToken.None, null);
-        }
-
         public Task<IModel> ReadAsync(Stream input, CancellationToken token, IProgress<double> progress)
         {
             return Task.Run(() => InternalRead(input, token, progress));

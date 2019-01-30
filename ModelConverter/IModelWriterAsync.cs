@@ -5,13 +5,6 @@ using System.Threading.Tasks;
 
 namespace ModelConverter
 {
-    public interface IModelWriter
-    {
-        void Write(Stream stream, IModel model);
-
-        string SupportedExtension { get; }
-        string FormatDescription { get; }
-    }
 
     public interface IModelWriterAsync
     {

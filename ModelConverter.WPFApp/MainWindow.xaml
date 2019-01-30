@@ -7,10 +7,11 @@
         xmlns:converters="clr-namespace:ModelConverter.WPFApp.Converters"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        ResizeMode="CanResizeWithGrip"
-        WindowStyle="ToolWindow"
+        ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow"
         d:DataContext="{d:DesignInstance wpfApp:MainViewModel}"
-        Title="Model Converter" SizeToContent="Height" MinWidth="450" Width="450">
+        
+        Title="Model Converter" SizeToContent="Height" Width="500">
     <Window.Resources>
         <!-- One style for each *type* of control on the window -->
         <Style TargetType="Button">
@@ -108,7 +109,7 @@
                     <TextBox Grid.Column="1" Grid.Row="1" IsReadOnly="True" Text="{Binding Volume}" />
 
                 </Grid>
-                <Expander Margin="5,0" Header="Transformation" IsExpanded="False" DataContext="{Binding Transformation}">
+                <Expander Margin="5,0" Header="Transformation" IsExpanded="False" DataContext="{Binding Transion}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Labels" />

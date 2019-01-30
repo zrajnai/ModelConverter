@@ -6,7 +6,7 @@ using ModelConverter.Model;
 
 namespace ModelConverter.ModelWriters
 {
-    public class STLTextModelWriter : IModelWriter, IModelWriterAsync
+    public class STLTextModelWriter : IModelWriterAsync
     {
         private Stream _output;
         private IModel _model;
@@ -15,11 +15,6 @@ namespace ModelConverter.ModelWriters
         public string SupportedExtension => ".stl";
 
         public string FormatDescription => "ASCII STL .stl file";
-
-        public void Write(Stream output, IModel model)
-        {
-            InternalWrite(output, CancellationToken.None, null, model);
-        }
 
         public Task WriteAsync(Stream stream, CancellationToken token, IProgress<double> progress, IModel model)
         {
