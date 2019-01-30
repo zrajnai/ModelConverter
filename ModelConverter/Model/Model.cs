@@ -21,13 +21,13 @@ namespace ModelConverter.Model
         public void AddTextureCoord(TextureCoord t) => _textureCoords.Add(t);
         public void AddFace(Face f)
         {
-            f.Normal = f.Normal ?? CalculateNormal(f);
+            f.Normal = f.Normal ?? FaceNormalCalculator.CalculateNormal(this, f);
 
             if (f.VertexIndices.Length == 3)
             {
                 _faces.Add(f);
             }
-            else //if (f.VertexIndices.Length == 4)
+            else
             {
                 var triangles = Triangulator.Triangulate(this, f);
                 foreach (var triangle in triangles)
@@ -48,34 +48,6 @@ namespace ModelConverter.Model
             };
         }
 
-        private Vector CalculateNormal(Face f)
-        {
-            var normal = new Vector(0, 0, 0);
-
-            for (var idx0 = 0; idx0 < f.VertexIndices.Length; idx0++)
-            {
-                var idx1 = (idx0 + 1 + f.VertexIndices.Length) % f.VertexIndices.Length;
-                var idx2 = (idx1 + 1 + f.VertexIndices.Length) % f.VertexIndices.Length;
-                normal = normal + CalculateNormal(f.VertexIndices[idx0], f.VertexIndices[idx1], f.VertexIndices[idx2]);
-            }
-
-            return normal.Normalize();
-        }
-
-        private Vector CalculateNormal(int i0, int i1, int i2)
-        {
-            // Note : supposes that the first 3 vertices are non convex!
-            var v1 = Vertices[i0];
-            var v2 = Vertices[i1];
-            var v3 = Vertices[i2];
-
-            var v31 = (Vector)v3 - (Vector)v1;
-            var v21 = (Vector)v2 - (Vector)v1;
-
-            var n = (v31 % v21).Normalize();
-
-            return new Vector(n.X, n.Y, n.Z);
-
-        }
     }
+
 }
