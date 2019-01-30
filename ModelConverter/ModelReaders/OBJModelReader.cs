@@ -151,8 +151,8 @@ namespace ModelConverter.ModelReaders
             var parts = SplitLine();
             if (parts.Length < 4)
                 ThrowInvalidModelFormatException("Too few parameters for face");
-            if (parts.Length > 5)
-                return; //ThrowInvalidModelFormatException("Sorry, only triangular and quad faces are supported");
+            //if (parts.Length > 5)
+            //    return; //ThrowInvalidModelFormatException("Sorry, only triangular and quad faces are supported");
 
             var vertexIndices = new List<int>(3);
             var textureCoordIndices = new List<int>(3);

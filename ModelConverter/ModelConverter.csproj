@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Calculators\AreaCalculator.cs" />
+    <Compile Include="Calculators\Triangulator.cs" />
     <Compile Include="ModelReaders\STLBinaryModelReader.cs" />
     <Compile Include="ModelTransformer.cs" />
     <Compile Include="ModelWriters\STLTextModelWriter.cs" />
