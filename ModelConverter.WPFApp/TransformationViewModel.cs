@@ -1,23 +1,34 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Media.Imaging;
 using ModelConverter.Math;
-using ModelConverter.Model;
 
 namespace ModelConverter.WPFApp
 {
     public class TransformationViewModel : INotifyPropertyChanged
     {
+
+        #region Member Variables
+
+        private double _rotationX;
+        private double _rotationY;
+        private double _rotationZ;
         private double _scaleX = 1;
         private double _scaleY = 1;
         private double _scaleZ = 1;
         private double _translationX;
         private double _translationY;
         private double _translationZ;
-        private double _rotationX;
-        private double _rotationY;
-        private double _rotationZ;
+
+        #endregion
+
+        #region Events
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Public Properties
 
         public double ScaleX
         {
@@ -73,7 +84,15 @@ namespace ModelConverter.WPFApp
             set => SetBackingField(ref _rotationZ, value);
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public Matrix Matrix =>
+            Matrix.Identity *
+            Matrix.Scale(ScaleX, ScaleY, ScaleZ) *
+            Matrix.RotationDeg(RotationX, RotationY, RotationZ) *
+            Matrix.Translate(TranslationX, TranslationY, TranslationZ);
+
+        #endregion
+
+        #region Private Methods
 
         private bool SetBackingField<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
         {
@@ -84,9 +103,7 @@ namespace ModelConverter.WPFApp
             return true;
         }
 
-        public Matrix Matrix => Matrix.Identity * 
-                                Matrix.Scale(ScaleX, ScaleY, ScaleZ) * 
-                                Matrix.RotationDeg(RotationX, RotationY, RotationZ) * 
-                                Matrix.Translate(TranslationX, TranslationY, TranslationZ); 
+        #endregion
+
     }
 }

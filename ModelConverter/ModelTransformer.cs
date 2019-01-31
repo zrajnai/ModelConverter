@@ -5,6 +5,9 @@ namespace ModelConverter
 {
     public static class ModelTransformer
     {
+
+        #region Public Methods
+
         public static IModel Transform(IModel model, Matrix transformation)
         {
             var result = new Model.Model();
@@ -15,6 +18,10 @@ namespace ModelConverter
 
             return result;
         }
+
+        #endregion
+
+        #region Private Methods
 
         private static void TransformFaces(IModel model, Matrix transformation, Model.Model result)
         {
@@ -46,5 +53,8 @@ namespace ModelConverter
                 result.AddVertex(transformation.Transform(v));
             }
         }
+
+        #endregion
+
     }
 }

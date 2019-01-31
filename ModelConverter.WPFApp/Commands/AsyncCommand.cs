@@ -6,14 +6,35 @@ namespace ModelConverter.WPFApp.Commands
 {
     public class AsyncCommand : ICommand
     {
-        private readonly Func<Task> _command;
+
+        #region Member Variables
+
         private readonly Func<bool> _canExecuteFunc;
+        private readonly Func<Task> _command;
+
+        #endregion
+
+        #region Constructors
 
         public AsyncCommand(Func<Task> command, Func<bool> canExecuteFunc)
         {
             _command = command;
             _canExecuteFunc = canExecuteFunc;
         }
+
+        #endregion
+
+        #region Events
+
+        public event EventHandler CanExecuteChanged
+        {
+            add => CommandManager.RequerySuggested += value;
+            remove => CommandManager.RequerySuggested -= value;
+        }
+
+        #endregion
+
+        #region Public Methods
 
         public bool CanExecute(object parameter) => _canExecuteFunc?.Invoke() ?? true;
 
@@ -22,15 +43,12 @@ namespace ModelConverter.WPFApp.Commands
             await _command();
         }
 
-        public event EventHandler CanExecuteChanged
-        {
-            add => CommandManager.RequerySuggested += value;
-            remove => CommandManager.RequerySuggested -= value;
-        }
-
         public void RaiseCanExecuteChanged()
         {
             CommandManager.InvalidateRequerySuggested();
         }
+
+        #endregion
+
     }
 }

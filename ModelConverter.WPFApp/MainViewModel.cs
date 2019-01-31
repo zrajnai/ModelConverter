@@ -18,22 +18,59 @@ namespace ModelConverter.WPFApp
 {
     public class MainViewModel : INotifyPropertyChanged
     {
+
+        #region Member Variables
+
+        private readonly AsyncCommand _convertCommand;
         private readonly IEnumerable<IModelReaderAsync> _readers;
         private readonly IEnumerable<IModelWriterAsync> _writers;
+        private string _area;
+        private CancellationTokenSource _cancellationTokenSource;
+        private bool _converting;
+        private bool _hasStatus;
         private string _inputFilePath;
         private string _outputFilePath;
-        private readonly AsyncCommand _convertCommand;
         private double _progressValue;
-        private bool _converting;
-        private string _area;
-        private string _volume;
-        private bool _hasStatus;
-        private string _statusMessage;
         private string _selectedOutputFormat;
         private IModelWriterAsync _selectedWriter;
-        private CancellationTokenSource _cancellationTokenSource;
+        private string _statusMessage;
+        private string _volume;
+
+        #endregion
+
+        #region Constructors
+
+        public MainViewModel(IEnumerable<IModelReaderAsync> readers,
+                             IEnumerable<IModelWriterAsync> writers)
+        {
+            if (!readers.Any())
+                throw new ArgumentException(nameof(readers));
+
+            if (!writers.Any())
+                throw new ArgumentException(nameof(writers));
+
+            _readers = readers;
+            _writers = writers;
+
+            OutputFormats = _writers.Select(w => w.FormatDescription).ToArray();
+            SelectedOutputFormat = OutputFormats.First();
+
+            BrowseInputFileCommand = new BasicCommand(DoBrowseInput);
+            BrowseOutputFileCommand = new BasicCommand(DoBrowseOutput);
+            ExitCommand = new BasicCommand(DoExit);
+            _convertCommand = new AsyncCommand(Convert, CanConvert);
+            CancelCommand = new BasicCommand(DoCancel);
+        }
+
+        #endregion
+
+        #region Events
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Public Properties
 
         public TransformationViewModel Transformation { get; } = new TransformationViewModel();
 
@@ -110,32 +147,18 @@ namespace ModelConverter.WPFApp
         }
 
         public ICommand BrowseInputFileCommand { get; }
+
         public ICommand BrowseOutputFileCommand { get; }
+
         public ICommand ExitCommand { get; }
+
         public ICommand ConvertCommand => _convertCommand;
+
         public ICommand CancelCommand { get; }
 
-        public MainViewModel(IEnumerable<IModelReaderAsync> readers,
-                             IEnumerable<IModelWriterAsync> writers)
-        {
-            if (!readers.Any())
-                throw new ArgumentException(nameof(readers));
+        #endregion
 
-            if (!writers.Any())
-                throw new ArgumentException(nameof(writers));
-
-            _readers = readers;
-            _writers = writers;
-
-            OutputFormats = _writers.Select(w => w.FormatDescription).ToArray();
-            SelectedOutputFormat = OutputFormats.First();
-            
-            BrowseInputFileCommand = new BasicCommand(DoBrowseInput);
-            BrowseOutputFileCommand = new BasicCommand(DoBrowseOutput);
-            ExitCommand = new BasicCommand(DoExit);
-            _convertCommand = new AsyncCommand(Convert, CanConvert);
-            CancelCommand = new BasicCommand(DoCancel);
-        }
+        #region Private Methods
 
         private void DoCancel()
         {
@@ -264,6 +287,9 @@ namespace ModelConverter.WPFApp
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             return true;
         }
+
+        #endregion
+
     }
 
 }

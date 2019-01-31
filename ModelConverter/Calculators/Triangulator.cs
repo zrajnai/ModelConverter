@@ -9,6 +9,9 @@ namespace ModelConverter.Calculators
 {
     internal static class Triangulator
     {
+
+        #region Public Methods
+
         public static int[][] Triangulate(IModel model, Face f)
         {
             var vertices = new List<int>(Enumerable.Range(0, f.VertexIndices.Length));
@@ -16,6 +19,10 @@ namespace ModelConverter.Calculators
 
             return Triangulate(model, f, vertices, results).ToArray();
         }
+
+        #endregion
+
+        #region Private Methods
 
         private static List<int[]> Triangulate(IModel model, Face f, List<int> vertices, List<int[]> results, int startIndex = 0)
         {
@@ -28,7 +35,7 @@ namespace ModelConverter.Calculators
                 results.Add(vertices.ToArray());
                 return results;
             }
-            
+
             if (!CanClip(model, f, vertices, i0, i1, i2))
             {
                 return Triangulate(model, f, vertices, results, i1);
@@ -81,17 +88,37 @@ namespace ModelConverter.Calculators
             var v10 = v0 - v1;
             var v1p = vp - v1;
 
-            return (v1 % v10) * v1p < 0;
+            return v1 % v10 * v1p < 0;
         }
+
+        #endregion
+
     }
 
     internal class CircularIterator : IEnumerator<int>
     {
+
+        #region Constructors
+
         public CircularIterator(int count, int startIndex = 0)
         {
             Current = startIndex % count;
             Count = count;
         }
+
+        #endregion
+
+        #region Public Properties
+
+        public int Current { get; private set; }
+
+        public int Count { get; }
+
+        #endregion
+
+        object IEnumerator.Current => Current;
+
+        #region Public Methods
 
         public void Dispose() { }
 
@@ -106,10 +133,7 @@ namespace ModelConverter.Calculators
             Current = 0;
         }
 
-        public int Current { get; private set; }
+        #endregion
 
-        public int Count { get; }
-
-        object IEnumerator.Current => Current;
     }
 }

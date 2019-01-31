@@ -1,9 +1,13 @@
 ﻿using ModelConverter.Math;
 using ModelConverter.Model;
 
-namespace ModelConverter.Calculators {
+namespace ModelConverter.Calculators
+{
     public static class FaceNormalCalculator
     {
+
+        #region Public Methods
+
         public static Vector CalculateNormal(IModel model, Face f)
         {
             var normal = new Vector(0, 0, 0);
@@ -17,6 +21,10 @@ namespace ModelConverter.Calculators {
 
             return normal.Normalize();
         }
+
+        #endregion
+
+        #region Private Methods
 
         private static Vector CalculateNormal(IModel model, int i0, int i1, int i2)
         {
@@ -33,5 +41,8 @@ namespace ModelConverter.Calculators {
             return new Vector(n.X, n.Y, n.Z);
 
         }
+
+        #endregion
+
     }
 }

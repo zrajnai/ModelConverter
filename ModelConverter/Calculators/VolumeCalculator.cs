@@ -6,10 +6,17 @@ namespace ModelConverter.Calculators
 {
     public static class VolumeCalculator
     {
+
+        #region Public Methods
+
         public static double Calculate(IModel model)
         {
             return model.Faces.Sum(face => CalculateVolume(model, face));
         }
+
+        #endregion
+
+        #region Private Methods
 
         private static double CalculateVolume(IModel model, Face face)
         {
@@ -30,5 +37,8 @@ namespace ModelConverter.Calculators
             var v123 = p1.X * p2.Y * p3.Z;
             return (-v321 + v231 + v312 - v132 - v213 + v123) / 6.0f;
         }
+
+        #endregion
+
     }
 }

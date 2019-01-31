@@ -13,21 +13,21 @@ namespace ModelConverter.Math
         public Matrix(double m11, double m12, double m13, double m21, double m22, double m23, double m31, double m32, double m33, double offsetX, double offsetY, double offsetZ) : this(m11, m12, m13, 0, m21, m22, m23, 0, m31, m32, m33, 0, offsetX, offsetY, offsetZ, 1) { }
 
         private Matrix(double m11,
-            double m12,
-            double m13,
-            double m14,
-            double m21,
-            double m22,
-            double m23,
-            double m24,
-            double m31,
-            double m32,
-            double m33,
-            double m34,
-            double offsetX,
-            double offsetY,
-            double offsetZ,
-            double m44)
+                       double m12,
+                       double m13,
+                       double m14,
+                       double m21,
+                       double m22,
+                       double m23,
+                       double m24,
+                       double m31,
+                       double m32,
+                       double m33,
+                       double m34,
+                       double offsetX,
+                       double offsetY,
+                       double offsetZ,
+                       double m44)
         {
             _m11 = m11;
             _m12 = m12;
@@ -49,27 +49,27 @@ namespace ModelConverter.Math
 
         public static Matrix Identity => new Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
 
-        private double _m11;
-        private double _m12;
-        private double _m13;
-        private double _m14;
-        private double _m21;
-        private double _m22;
-        private double _m23;
-        private double _m24;
-        private double _m31;
-        private double _m32;
-        private double _m33;
-        private double _m34;
-        private double _m44;
-        private double _offsetX;
-        private double _offsetY;
-        private double _offsetZ;
+        private readonly double _m11;
+        private readonly double _m12;
+        private readonly double _m13;
+        private readonly double _m14;
+        private readonly double _m21;
+        private readonly double _m22;
+        private readonly double _m23;
+        private readonly double _m24;
+        private readonly double _m31;
+        private readonly double _m32;
+        private readonly double _m33;
+        private readonly double _m34;
+        private readonly double _m44;
+        private readonly double _offsetX;
+        private readonly double _offsetY;
+        private readonly double _offsetZ;
 
         public Vertex Transform(Vertex point)
         {
             return new Vertex
-            { 
+            {
                 X = point.X * _m11 + point.Y * _m21 + point.Z * _m31 + _offsetX,
                 Y = point.X * _m12 + point.Y * _m22 + point.Z * _m32 + _offsetY,
                 Z = point.X * _m13 + point.Y * _m23 + point.Z * _m33 + _offsetZ,
@@ -136,8 +136,8 @@ namespace ModelConverter.Math
             var sin = System.Math.Sin(angle);
             var cos = System.Math.Cos(angle);
             return new Matrix(cos, 0, -sin,
-                                0, 1, 0,
-                                sin, 0, cos);
+                              0, 1, 0,
+                              sin, 0, cos);
         }
 
         public static Matrix RotationZDeg(double angle) => RotationZRad(angle * _degreesToRadians);

@@ -6,10 +6,17 @@ namespace ModelConverter.Calculators
 {
     public static class AreaCalculator
     {
+
+        #region Public Methods
+
         public static double Calculate(IModel model)
         {
             return model.Faces.Sum(face => CalculateArea(model, face));
         }
+
+        #endregion
+
+        #region Private Methods
 
         private static double CalculateArea(IModel model, Face face)
         {
@@ -23,6 +30,9 @@ namespace ModelConverter.Calculators
             var area = (v10 % v20).Length * 0.5d;
             return area;
         }
+
+        #endregion
+
     }
 
 }

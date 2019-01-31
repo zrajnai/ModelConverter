@@ -6,19 +6,31 @@ namespace ModelConverter.Model
 {
     internal class Model : IModel
     {
-        public IReadOnlyList<Vertex> Vertices => _vertices;
-        public IReadOnlyList<Vector> VertexNormals => _vertexNormals;
-        public IReadOnlyList<TextureCoord> TextureCoords => _textureCoords;
-        public IReadOnlyList<Face> Faces => _faces;
+
+        #region Member Variables
+
+        private readonly List<Face> _faces = new List<Face>();
+        private readonly List<TextureCoord> _textureCoords = new List<TextureCoord>();
+        private readonly List<Vector> _vertexNormals = new List<Vector>();
 
         private readonly List<Vertex> _vertices = new List<Vertex>();
-        private readonly List<Vector> _vertexNormals = new List<Vector>();
-        private readonly List<TextureCoord> _textureCoords = new List<TextureCoord>();
-        private readonly List<Face> _faces = new List<Face>();
 
-        public void AddVertex(Vertex v) => _vertices.Add(v);
-        public void AddVertexNormal(Vector v) => _vertexNormals.Add(v);
-        public void AddTextureCoord(TextureCoord t) => _textureCoords.Add(t);
+        #endregion
+
+        #region Public Properties
+
+        public IReadOnlyList<Vertex> Vertices => _vertices;
+
+        public IReadOnlyList<Vector> VertexNormals => _vertexNormals;
+
+        public IReadOnlyList<TextureCoord> TextureCoords => _textureCoords;
+
+        public IReadOnlyList<Face> Faces => _faces;
+
+        #endregion
+
+        #region Public Methods
+
         public void AddFace(Face f)
         {
             f.Normal = f.Normal ?? FaceNormalCalculator.CalculateNormal(this, f);
@@ -37,6 +49,16 @@ namespace ModelConverter.Model
             }
         }
 
+        public void AddTextureCoord(TextureCoord t) => _textureCoords.Add(t);
+
+        public void AddVertex(Vertex v) => _vertices.Add(v);
+
+        public void AddVertexNormal(Vector v) => _vertexNormals.Add(v);
+
+        #endregion
+
+        #region Private Methods
+
         private static Face CreateFaceFromIndices(Face f, int i0, int i1, int i2)
         {
             return new Face
@@ -47,6 +69,8 @@ namespace ModelConverter.Model
                 TextureCoordIndices = f.TextureCoordIndices.Length > 0 ? new[] { f.TextureCoordIndices[i0], f.TextureCoordIndices[i1], f.TextureCoordIndices[i2] } : new int[0],
             };
         }
+
+        #endregion
 
     }
 

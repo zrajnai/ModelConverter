@@ -9,18 +9,33 @@ namespace ModelConverter.ModelWriters
 {
     public class STLBinaryModelReader : IModelReaderAsync
     {
+
+        #region Member Variables
+
         private Stream _input;
-        private Model.Model _model;
         private int _lastReportedProgress;
+        private Model.Model _model;
+
+        #endregion
+
+        #region Public Properties
 
         public string SupportedExtension => ".stl";
 
         public string FormatDescription => "Binary STL .stl file";
 
+        #endregion
+
+        #region Public Methods
+
         public Task<IModel> ReadAsync(Stream input, CancellationToken token, IProgress<double> progress)
         {
             return Task.Run(() => InternalRead(input, token, progress));
         }
+
+        #endregion
+
+        #region Private Methods
 
         private IModel InternalRead(Stream input, CancellationToken token, IProgress<double> progress)
         {
@@ -30,7 +45,7 @@ namespace ModelConverter.ModelWriters
                 throw new ArgumentException("Input stream must be readable");
 
             _model = new Model.Model();
-            
+
             using (var br = new BinaryReader(input))
             {
                 br.ReadBytes(80);
@@ -49,7 +64,7 @@ namespace ModelConverter.ModelWriters
                     _model.AddVertex((Vertex)ReadVector(br));
                     _model.AddVertex((Vertex)ReadVector(br));
                     _model.AddVertex((Vertex)ReadVector(br));
-                    
+
                     br.ReadInt16();
 
                     var face = new Face
@@ -73,5 +88,8 @@ namespace ModelConverter.ModelWriters
             progress?.Report(currentProgress);
             _lastReportedProgress = currentProgress;
         }
+
+        #endregion
+
     }
 }

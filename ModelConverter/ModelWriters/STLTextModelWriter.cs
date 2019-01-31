@@ -8,18 +8,33 @@ namespace ModelConverter.ModelWriters
 {
     public class STLTextModelWriter : IModelWriterAsync
     {
-        private Stream _output;
-        private IModel _model;
+
+        #region Member Variables
+
         private int _lastReportedProgress;
+        private IModel _model;
+        private Stream _output;
+
+        #endregion
+
+        #region Public Properties
 
         public string SupportedExtension => ".stl";
 
         public string FormatDescription => "ASCII STL .stl file";
 
+        #endregion
+
+        #region Public Methods
+
         public Task WriteAsync(Stream stream, CancellationToken token, IProgress<double> progress, IModel model)
         {
             return Task.Run(() => InternalWrite(stream, token, progress, model));
         }
+
+        #endregion
+
+        #region Private Methods
 
         private void InternalWrite(Stream output, CancellationToken token, IProgress<double> progress, IModel model)
         {
@@ -29,11 +44,11 @@ namespace ModelConverter.ModelWriters
                 throw new ArgumentException("Output stream must be writable");
 
             _model = model ?? throw new ArgumentNullException(nameof(model));
-            
+
             using (var streamWriter = new StreamWriter(_output))
             {
                 streamWriter.WriteLine("solid ");
-                
+
                 _lastReportedProgress = 0;
                 foreach (var face in _model.Faces)
                 {
@@ -74,5 +89,8 @@ namespace ModelConverter.ModelWriters
             progress?.Report(currentProgress);
             _lastReportedProgress = currentProgress;
         }
+
+        #endregion
+
     }
 }

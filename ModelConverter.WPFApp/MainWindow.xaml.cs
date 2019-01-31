@@ -9,6 +9,9 @@ namespace ModelConverter.WPFApp
     /// </summary>
     public partial class MainWindow : Window
     {
+
+        #region Constructors
+
         public MainWindow()
         {
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -27,6 +30,9 @@ namespace ModelConverter.WPFApp
 
             DataContext = new MainViewModel(readers, writers);
         }
+
+        #endregion
+
     }
 
 }

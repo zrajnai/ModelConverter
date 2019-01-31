@@ -4,9 +4,12 @@ namespace ModelConverter
 {
     internal class InvalidModelFormatException : Exception
     {
-        public InvalidModelFormatException(string message) : base(message)
-        {
-            
-        }
+
+        #region Constructors
+
+        public InvalidModelFormatException(string message) : base(message) { }
+
+        #endregion
+
     }
 }

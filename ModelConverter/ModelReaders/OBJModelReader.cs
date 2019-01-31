@@ -12,17 +12,32 @@ namespace ModelConverter.ModelReaders
 {
     public class OBJModelReader : IModelReaderAsync
     {
-        private Stream _input;
-        private int _currentLineNumber;
+
+        #region Member Variables
+
         private string _currentLine;
+        private int _currentLineNumber;
+        private Stream _input;
         private int _lastReportedProgress;
         private Model.Model _model;
+
+        #endregion
+
+        #region Public Properties
 
         public string SupportedExtension => ".obj";
 
         public string FormatDescription => "Wavefront .obj file";
 
+        #endregion
+
+        #region Public Methods
+
         public Task<IModel> ReadAsync(Stream input, CancellationToken token, IProgress<double> progress) => Task.Run(() => InternalRead(input, token, progress));
+
+        #endregion
+
+        #region Private Methods
 
         private IModel InternalRead(Stream input, CancellationToken token, IProgress<double> progress = null)
         {
@@ -149,7 +164,7 @@ namespace ModelConverter.ModelReaders
             var parts = SplitLine();
             if (parts.Length < 4)
                 ThrowInvalidModelFormatException("Too few parameters for face");
-            
+
             var vertexIndices = new List<int>(3);
             var textureCoordIndices = new List<int>(3);
             var normalIndices = new List<int>(3);
@@ -169,7 +184,7 @@ namespace ModelConverter.ModelReaders
                 TextureCoordIndices = textureCoordIndices.ToArray(),
             });
         }
-        
+
         private void ParseFaceIndexBundle(string part, ICollection<int> vertexIndices, List<int> textureCoordIndices, List<int> normalIndices)
         {
             var indices = part.Split('/');
@@ -234,6 +249,7 @@ namespace ModelConverter.ModelReaders
         {
             return double.TryParse(input, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out output);
         }
+
         private void ThrowParseException(string component)
         {
             throw new InvalidModelFormatException($"Can't parse {component} {CurrentLineMessage()}");
@@ -254,6 +270,8 @@ namespace ModelConverter.ModelReaders
             progress?.Report(currentProgress);
             _lastReportedProgress = currentProgress;
         }
+
+        #endregion
 
     }
 }
