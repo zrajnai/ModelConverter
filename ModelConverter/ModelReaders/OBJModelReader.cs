@@ -202,30 +202,46 @@ namespace ModelConverter.ModelReaders
         {
             if (!int.TryParse(indices[0], out var vertexIndex))
                 ThrowParseException("face vertex index");
-            if (vertexIndex > _model.Vertices.Count)
-                ThrowInvalidModelFormatException("Illegal vertex reference");
             if (vertexIndex < 0)
-                vertexIndex = _model.Vertices.Count - vertexIndex + 1;
+                vertexIndex = _model.Vertices.Count + vertexIndex + 1;
+
+            if (vertexIndex < 0 || vertexIndex > _model.Vertices.Count)
+                ThrowInvalidModelFormatException("Illegal vertex reference");
 
             vertexIndices.Add(vertexIndex - 1);
         }
 
         private void ParseNormalIndex(IReadOnlyList<string> indices, ICollection<int> normalIndices)
         {
-            var normalIndex = -1;
-            if (indices.Count > 2 && indices[2].Length > 0 && !int.TryParse(indices[2], out normalIndex))
+            if (indices.Count <= 2 || indices[2].Length <= 0)
+                return;
+
+            if (!int.TryParse(indices[2], out int normalIndex))
                 ThrowParseException("face normal index");
-            if (normalIndex > 0)
-                normalIndices.Add(normalIndex - 1);
+
+            if (normalIndex < 0)
+                normalIndex = _model.VertexNormals.Count + normalIndex + 1;
+
+            if (normalIndex < 0 || normalIndex > _model.VertexNormals.Count)
+                ThrowInvalidModelFormatException("Illegal vertex normal reference");
+
+            normalIndices.Add(normalIndex - 1);
         }
 
         private void ParseTextureCoordIndex(IReadOnlyList<string> indices, ICollection<int> textureCoordIndices)
         {
-            var textureCoordIndex = -1;
-            if (indices.Count > 1 && indices[1].Length > 0 && !int.TryParse(indices[1], out textureCoordIndex))
+            if (indices.Count <= 1 || indices[1].Length <= 0)
+                return;
+
+            if (!int.TryParse(indices[1], out int textureCoordIndex))
                 ThrowParseException("face texture index");
-            if (textureCoordIndex >= 0)
-                textureCoordIndices.Add(textureCoordIndex - 1);
+
+            if (textureCoordIndex < 0)
+                textureCoordIndex = _model.TextureCoords.Count + textureCoordIndex + 1;
+
+            if (textureCoordIndex < 0 || textureCoordIndex > _model.TextureCoords.Count)
+                ThrowInvalidModelFormatException("Illegal texture coord reference");
+            textureCoordIndices.Add(textureCoordIndex - 1);
         }
 
         private void ValidateNormalIndices(IReadOnlyCollection<int> normalIndices, IReadOnlyCollection<int> vertexIndices)
