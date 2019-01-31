@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Calculators\AreaCalculator.cs" />
+    <Compile Include="Calculators\CircularIterator.cs" />
     <Compile Include="Calculators\FaceNormalCalculator.cs" />
     <Compile Include="Calculators\Triangulator.cs" />
     <Compile Include="ModelReaders\STLBinaryModelReader.cs" />

@@ -35,6 +35,9 @@ namespace ModelConverter.Model
         {
             f.Normal = f.Normal ?? FaceNormalCalculator.CalculateNormal(this, f);
 
+            if (f.Normal.Length < 1e-5)
+                return; // skipping degenerate face
+
             if (f.VertexIndices.Length == 3)
             {
                 _faces.Add(f);

@@ -9,10 +9,7 @@ namespace ModelConverter.Calculators
 
         #region Public Methods
 
-        public static double Calculate(IModel model)
-        {
-            return model.Faces.Sum(face => CalculateVolume(model, face));
-        }
+        public static double Calculate(IModel model) => model.Faces.Sum(face => CalculateVolume(model, face));
 
         #endregion
 

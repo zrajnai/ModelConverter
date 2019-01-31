@@ -20,12 +20,12 @@ namespace ModelConverter.Calculators
 
         private static double CalculateArea(IModel model, Face face)
         {
-            var v0 = model.Vertices[face.VertexIndices[0]];
-            var v1 = model.Vertices[face.VertexIndices[1]];
-            var v2 = model.Vertices[face.VertexIndices[2]];
+            var v0 = (Vector)model.Vertices[face.VertexIndices[0]];
+            var v1 = (Vector)model.Vertices[face.VertexIndices[1]];
+            var v2 = (Vector)model.Vertices[face.VertexIndices[2]];
 
-            var v10 = (Vector)v1 - (Vector)v0;
-            var v20 = (Vector)v2 - (Vector)v0;
+            var v10 = v1 - v0;
+            var v20 = v2 - v0;
 
             var area = (v10 % v20).Length * 0.5d;
             return area;
