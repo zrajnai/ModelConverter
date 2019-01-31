@@ -56,7 +56,7 @@ namespace ModelConverter.Calculators
             var ip = new CircularIterator(vertices.Count, i2 + 1);
             do
             {
-                if (!IsOutSideTriangle(model, f, vertices[i0], vertices[i1], vertices[i2], ip.Current))
+                if (!IsOutSideTriangle(model, f, vertices[i0], vertices[i1], vertices[i2], vertices[ip.Current]))
                     return false;
                 ip.MoveNext();
             } while (ip.Current != i0);
