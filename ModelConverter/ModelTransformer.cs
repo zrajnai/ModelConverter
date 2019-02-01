@@ -12,9 +12,11 @@ namespace ModelConverter
         {
             var result = new Model.Model();
 
+            var normalTransform = transformation.NoTranslation.Inverse.Transpose;
+
             TransformVertices(model, transformation, result);
-            TransformVertexNormals(model, transformation, result);
-            TransformFaces(model, transformation, result);
+            TransformVertexNormals(model, normalTransform, result);
+            TransformFaces(model, normalTransform, result);
 
             return result;
         }
@@ -23,13 +25,14 @@ namespace ModelConverter
 
         #region Private Methods
 
-        private static void TransformFaces(IModel model, Matrix transformation, Model.Model result)
+        private static void TransformFaces(IModel model, Matrix normalTransform, Model.Model result)
         {
+            
             foreach (var f in model.Faces)
             {
                 result.AddFace(new Face
                     {
-                        Normal = transformation.Transform(f.Normal),
+                        Normal = normalTransform.Transform(f.Normal),
                         VertexIndices = f.VertexIndices,
                         NormalIndices = f.NormalIndices,
                         TextureCoordIndices = f.TextureCoordIndices

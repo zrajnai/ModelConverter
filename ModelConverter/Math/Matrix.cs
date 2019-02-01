@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using ModelConverter.Model;
 
 namespace ModelConverter.Math
@@ -48,6 +49,54 @@ namespace ModelConverter.Math
         }
 
         public static Matrix Identity => new Matrix(1, 0, 0, 0, 1, 0, 0, 0, 1);
+
+        public double Determinant => _m11 * (_m22 * _m33 - _m23 * _m32) - _m12 * (_m21 * _m33 - _m23 * _m31) + _m13 * (_m21 * _m32 - _m22 * _m31);
+
+        public Matrix NoTranslation => new Matrix(_m11, _m12, _m13, _m21, _m22, _m23, _m31, _m32, _m33);
+
+        public Matrix Transpose => new Matrix(_m11, _m21, _m31, _offsetX, 
+                                              _m12, _m22, _m32, _offsetY, 
+                                              _m13, _m23, _m33, _offsetZ, 
+                                              _m14, _m24, _m34, _m44);
+
+        public Matrix Inverse
+        {
+            get
+            {
+                var det = Determinant;
+                if (System.Math.Abs(det) < _epsilon)
+                {
+                    throw new InvalidOperationException("Cannot invert: determinant is zero.");
+                }
+
+                var invDet = 1.0 / det;
+                //https://en.wikipedia.org/wiki/Invertible_matrix#Inversion_of_3_.C3.97_3_matrices
+                var A = _m22 * _m33 - _m23 * _m32;
+                var B = -(_m21 * _m33 - _m23 * _m31);
+                var C = _m21 * _m32 - _m22 * _m31;
+
+                var D = -(_m12 * _m33 - _m13 * _m32);
+                var E = _m11 * _m33 - _m13 * _m31;
+                var F = -(_m11 * _m32 - _m12 * _m31);
+
+                var G = _m12 * _m23 - _m13 * _m22;
+                var H = -(_m11 * _m23 - _m13 * _m21);
+                var I = _m11 * _m22 - _m12 * _m21;
+
+                var O1 = _offsetX * A + _offsetY * B + _offsetZ * C;
+                var O2 = _offsetX * D + _offsetY * E + _offsetZ * F;
+                var O3 = _offsetX * G + _offsetY * H + _offsetZ * I;
+
+                var m = new Matrix(
+                    A * invDet, D * invDet, G * invDet,
+                    B * invDet, E * invDet, H * invDet,
+                    C * invDet, F * invDet, I * invDet,
+                    -O1 * invDet, -O2 * invDet, -O3 * invDet);
+
+                Debug.Assert(m * this == Identity);
+                return m;
+            }
+        }
 
         private readonly double _m11;
         private readonly double _m12;
@@ -135,9 +184,7 @@ namespace ModelConverter.Math
         {
             var sin = System.Math.Sin(angle);
             var cos = System.Math.Cos(angle);
-            return new Matrix(cos, 0, -sin,
-                              0, 1, 0,
-                              sin, 0, cos);
+            return new Matrix(cos, 0, -sin, 0, 1, 0, sin, 0, cos);
         }
 
         public static Matrix RotationZDeg(double angle) => RotationZRad(angle * _degreesToRadians);
